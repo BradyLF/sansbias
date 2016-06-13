@@ -7,6 +7,11 @@ import './join.html';
 
 //main template
 Router.route('/', function () {
+  this.render('index');
+});
+
+//addRoom template
+Router.route('/addRoom', function () {
   this.render('addRoom');
 });
 
@@ -94,10 +99,12 @@ if (Meteor.isClient) {
 		}
 	});
 	
+	//get parameters in a join url
 	Template.joinRoom.helpers({
-        joinID: function(){
-           $('.joinID').val(Router.current().params.roomID);
-        }
+        getId: function () {
+			var params =  Router.current().params;
+			return params && params._id ? params._id : '';
+		}
     });
 	
 	//TODO - get room ID from url parameters

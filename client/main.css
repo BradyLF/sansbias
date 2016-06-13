@@ -1,1 +1,26 @@
-/* CSS declarations go here */
+@import url(https://fonts.googleapis.com/css?family=Montserrat);
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+html, body {
+	font-family: 'Roboto', sans-serif;
+}
+
+.content {
+	width: 80%;
+	margin-left: 10%;
+}
+
+#navbar {
+	font-family: 'Montserrat', sans-serif;
+	text-transform: uppercase;
+	background-color: #DE4F4F;
+}
+
+.navbar-brand {
+	margin-top: -1px;
+	color: white;
+}
+
+.title {
+	text-align: center;
+}
