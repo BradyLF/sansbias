@@ -1,0 +1,34 @@
+<head>
+  <title>Create a room | Sansbias</title>
+</head>
+
+<body>
+  {{> renderPage}}
+</body>
+
+<template name="addRoom">
+	<p>Enter your options as a comma separated list</p>
+	<input placeholder="one, two, three" type="text" class="optionsList">
+	<p>Enter your name</p>
+    <input placeholder="Alice Roberts" type="text" class="adminName"><br><br>
+	<button class="submit" type="submit" value="submit">Create Room -></button>
+	<a href="google.com" id="roomID"></a>
+</template>
+
+<template name="joinRoom">
+  <p>Enter Your Room ID</p>
+  <input placeholder="1" type="text" class="joinID">
+  <p>Enter Your Name</p>
+  <input placeholder="Alice Roberts" type="text" class="memberName"><br><br>
+  <button class="submit" type="submit" value="submit">Join Room -></button>
+</template>
+
+<template name="displayRoom">
+ <div id="roomData">
+  	<ul>
+	  	{{#each people}}
+	  		<li>{{this}}</li>
+	  	{{/each}}	
+  	</ul>
+  </div>
+</template>
