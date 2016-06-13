@@ -1,7 +1,8 @@
 <head>
-  <title>Create a room | Sansbias</title>
+  <title>SANSBIAS</title>
   <link href="bootstrap.min.css" rel="stylesheet">
   <link href="main.css" rel="stylesheet">
+  <link href="animate.css" rel="stylesheet">
 </head>
 
 <body>
@@ -15,7 +16,7 @@
 			        <span class="icon-bar"></span>
 			        <span class="icon-bar"></span>
 			      </button>
-			      <a class="navbar-brand" href="#">sansbias</a>
+			      <a class="navbar-brand" href="/">sansbias</a>
 			    </div>
 			    <!-- Collect the nav links, forms, and other content for toggling -->
 			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -29,6 +30,8 @@
 			</div>
 		</nav>
 		{{> renderPage}}
+		  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
 </body>
 
 
@@ -37,15 +40,21 @@
 
 <!-- index template-->
 <template name="index">
-	<div class="content">
+	<div id="index" class="animated fadeIn content">
 		<h1 class="title">sansbias</h1>
+		<h2 class="subtitle">secure group decision making</h2>
+		<hr class="animated zoomIn">
+		<div class="button-container">
+			<a href="/addRoom" class="large-flat-button">Create A New Room</a>
+			<a href="/joinRoom" class="large-flat-button">Join Existing Room</a>
+		</div>
 	</div>
 </template>
 
 
 <!-- addroom template-->
 <template name="addRoom">
-	<div class="content">
+	<div class="animated fadeIn content">
 		<p>Enter your options as a comma separated list</p>
 		<input placeholder="one, two, three" type="text" class="optionsList">
 		<p>Enter your name</p>
@@ -57,7 +66,7 @@
 
 <!-- join template-->
 <template name="joinRoom">
-	<div class="content">
+	<div class="animated fadeIn content">
 		<p>Enter Your Room ID</p>
 		<input placeholder="1" type="text" class="joinID" value={{getId}}>
 		<p>Enter Your Name</p>
@@ -68,7 +77,7 @@
 
 <!-- display template-->
 <template name="displayRoom">
-	<div class="content">
+	<div class="animated fadeIn content">
 		<p>Welcome to your room!</p>
 	</div>
 </template>

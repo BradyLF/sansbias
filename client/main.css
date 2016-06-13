@@ -1,8 +1,8 @@
 @import url(https://fonts.googleapis.com/css?family=Montserrat);
-@import url(https://fonts.googleapis.com/css?family=Roboto);
-
 html, body {
-	font-family: 'Roboto', sans-serif;
+	font-family: 'Montserrat', sans-serif;
+	background-color: #48505f;
+	color: #fff;
 }
 
 .content {
@@ -17,10 +17,73 @@ html, body {
 }
 
 .navbar-brand {
-	margin-top: -1px;
 	color: white;
 }
 
+#index {
+	width: 100%;
+	margin-left: 0;
+	margin-top: -20px;
+	height: calc(100vh - 50px);
+	min-height: 300px;
+	background: url(images/bg.jpg) no-repeat center center fixed; 
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
 .title {
+	padding-top: 50px;
 	text-align: center;
+	line-height: 4px;
+	color: #fff;
+}
+
+.subtitle {
+	text-align: center;
+	font-size: small;
+	color: #fff
+}
+
+.button-container {
+	margin-top: 100px;
+	text-align: center;
+}
+
+.flat-button {
+	text-transform: uppercase;
+	background-color: #fff;
+	color: #48505f;
+	padding: 7px;
+	text-decoration: none;
+}
+
+.flat-button:hover {
+	background-color: #f3f3f3;
+	color: #48505f;
+	text-decoration: none;
+}
+
+.large-flat-button {
+	text-transform: uppercase;
+	background-color: #fff;
+	color: #48505f;
+	padding: 14px;
+	text-decoration: none;
+	font-size: x-large;
+	min-width: 350px;
+	margin: 20px;
+	border: none;
+}
+
+.large-flat-button:hover {
+	background-color: #e6e6e6;
+	color: #48505f;
+	text-decoration: none;
+}
+
+hr {
+	width: 70%;
+	color: #fff;
 }
