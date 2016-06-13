@@ -20,6 +20,13 @@ html, body {
 	color: white;
 }
 
+input {
+	border: none;
+	color: #48505f;
+	padding: 5px;
+	margin-bottom: 20px;
+}
+
 #index {
 	width: 100%;
 	margin-left: 0;
@@ -55,8 +62,9 @@ html, body {
 	text-transform: uppercase;
 	background-color: #fff;
 	color: #48505f;
-	padding: 7px;
+	padding: 10px;
 	text-decoration: none;
+	border: none;
 }
 
 .flat-button:hover {
@@ -86,4 +94,16 @@ html, body {
 hr {
 	width: 70%;
 	color: #fff;
+}
+
+.full-width {
+	width: 100%;
+	color: #fff;
+}
+
+@media only screen and (max-width: 768px) {
+    
+	.large-flat-button {
+		display: block;
+	}
 }
