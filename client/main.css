@@ -20,10 +20,15 @@ html, body {
 	color: white;
 }
 
+.about-text {
+	text-align: justify; 
+}
+
 input {
 	border: none;
 	color: #48505f;
 	padding: 5px;
+	min-width: 200px;
 	margin-bottom: 20px;
 }
 
@@ -41,21 +46,57 @@ input {
 }
 
 .title {
-	padding-top: 50px;
+	padding-top: 15px;
 	text-align: center;
-	line-height: 4px;
 	color: #fff;
 }
 
 .subtitle {
 	text-align: center;
-	font-size: small;
+	font-size: medium;
 	color: #fff
 }
 
 .button-container {
 	margin-top: 100px;
 	text-align: center;
+}
+
+#room-code {
+	margin-top: 30px;
+	background-color: #fff;
+	color: #48505f;
+	padding: 10px;
+	text-decoration: none;
+	border: none;
+	width: 70%;
+}
+
+#manage-title {
+	margin-top: 30px;
+	background-color: #fff;
+	color: #48505f;
+	padding: 10px;
+	text-decoration: none;
+	border: none;
+	width: 100%;
+}
+
+#adminTools {
+	text-align: center;
+}
+
+.admin-button {
+	text-transform: uppercase;
+	background-color: #fff;
+	color: #48505f;
+	padding: 10px;
+	text-decoration: none;
+	font-size: medium;
+	border: none;
+	margin: 30px;
+	padding: 30px;
+	margin-bottom: 100px;
 }
 
 .flat-button {
@@ -96,6 +137,12 @@ hr {
 	color: #fff;
 }
 
+.left-incomplete{
+	width: 70%;
+	color: #fff;
+	margin-left: 0;
+}
+
 .full-width {
 	width: 100%;
 	color: #fff;
@@ -105,5 +152,15 @@ hr {
     
 	.large-flat-button {
 		display: block;
+	}
+	#room-code {
+		margin-top: 30px;
+		background-color: #fff;
+		color: #48505f;
+		padding: 10px;
+		text-decoration: none;
+		border: none;
+		width: 100%;
+		font-size: small;
 	}
 }
