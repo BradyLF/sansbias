@@ -15,10 +15,18 @@ Router.route('/joinRoom', function () {
   this.render('joinRoom');
 });
 
+//join with shareable url template
+Router.route('/joinRoom/:_id', function () {   
+  this.render('joinRoom');
+});
+
 //TODO: display template 
 Router.route('/room/:_id', function () {
   var params = this.params;
-  var roomID = params._id; // "5"
+  var roomID = params._id;
+  
+  console.log(Rooms.findOne({_id: roomID}));
+  this.render("displayRoom");
 });
 
 //make sure you're client side
@@ -39,6 +47,9 @@ if (Meteor.isClient) {
 			//boolean of whether or not the room is open
 			var isOpen = true;
 			
+			//timestamp on submit
+			var timeStamp = Math.floor(Date.now() / 1000);
+			
 			//add relevant infor to collection
 			Rooms.insert({
 				optionsList: options,
@@ -46,15 +57,16 @@ if (Meteor.isClient) {
 				admin: admin,
 				membersArr: members,
 				isOpen: isOpen,
-				finalChoice: "Not Yet Made"
+				finalChoice: "Not Yet Made",
+				timeStamp: timeStamp
 			});
 			
 			//clears text fields
-			$('optionsList').val('');
-			$('adminName').val('');
+			$('.optionsList').val('');
+			$('.adminName').val('');
 			
 			//displays the newly generated roomID
-			var newRoomID = Rooms.findOne({}, {fields: {_id: 1}, sort: {_id: 1}});
+			var newRoomID = Rooms.findOne({}, {sort: {timeStamp: -1}});
 			document.getElementById("roomID").innerHTML = newRoomID._id.toString()
 		}
 	});
@@ -82,13 +94,19 @@ if (Meteor.isClient) {
 		}
 	});
 	
+	Template.joinRoom.helpers({
+        joinID: function(){
+           $('.joinID').val(Router.current().params.roomID);
+        }
+    });
+	
 	//TODO - get room ID from url parameters
-	Template.displayRoom.helpers({
-		people: function() {
-			var getRoomID = $('.joinID').val();
-			return Rooms.findOne({_id: "9GAJubXhkd32HKDHb"}).membersArr;
-		}
-	});
+	//Template.displayRoom.helpers({
+	//	people: function() {
+	//		var getRoomID = $('.joinID').val();
+	//		return Rooms.findOne({_id: "9GAJubXhkd32HKDHb"}).membersArr;
+	//	}
+	//});
 	
 	
 }
