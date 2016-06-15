@@ -57,11 +57,11 @@
 		<h1>Create A Room</h1>
 		<hr class="full-width">
 		<h4>Type your options as a comma separated list</h4>
-		<input placeholder="one, two, three" type="text" class="optionsList">
+		<input placeholder="one, two, three" type="text" class="optionsList" maxlength="40">
 		<h4>Type your name</h4>
-		<input placeholder="Alice Roberts" type="text" class="adminName">
+		<input placeholder="Alice Roberts" type="text" class="adminName" maxlength="40">
 		<h4>Create a room name</h4>
-		<input placeholder="Restaurant Choices" type="text" class="roomName"><br><br>
+		<input placeholder="Restaurant Choices" type="text" class="roomName" maxlength="40"><br><br>
 		<button class="submit flat-button" type="submit" value="submit">Create Room</button>
 		<a href="google.com" id="roomID"></a>
 	</div>
@@ -70,7 +70,7 @@
 <!-- join template-->
 <template name="joinRoom">
 	<div class="animated fadeIn content">
-		<h1>Join A Room</h1>
+		<h1>Join An Existing Room</h1>
 		<hr class="full-width">
 		<h4>Enter Your Room Code</h4>
 		<input placeholder="e.g. 2544Cm!zjAEnmi3ga" type="text" class="joinID" value={{getId}}>
@@ -110,8 +110,11 @@
 			<h3>Admin Link:</h3>
 			<h2 id="room-code" class="subtitle">{{adminLink}}</h2>
 			<hr class="left-incomplete">
-			<h3>Shareable Link:</h3>
+			<h3>Invite Link:</h3>
 			<h2 id="room-code" class="subtitle">{{joinLink}}</h2>
+			<hr class="left-incomplete">
+			<h3>Room Status:</h3>
+			<h4>{{roomStatus}}</h4>
 			<hr class="left-incomplete">
 			<h3>Room Administrator:</h3>
 			<h4>{{adminName}}</h4>
@@ -129,8 +132,8 @@
 			<hr class="full-width">
 		</div>
 		<div id="adminTools">
-			<button class="submit admin-button" type="submit" value="submit">Close Room</button>
-			<button class="submit admin-button" type="submit" value="submit">Delete Room</button>
+			<button class="closeRoom admin-button" type="closeRoom" id="closeRoom" value="closeRoom">Close Room</button>
+			<button class="delete admin-button" type="delete" value="delete">Delete Room</button>
 		</div>
 	</div>
 </template>

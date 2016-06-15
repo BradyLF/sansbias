@@ -1,0 +1,7 @@
+{
+  "galaxy.meteor.com": { 
+     "env": { 
+       "MONGO_URL": "mongodb://bafrick:Trumpet99$@ds015334.mlab.com:15334/sansbias" 
+     } 
+   }
+}

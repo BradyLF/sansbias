@@ -1,3 +1,9 @@
+//TODO LIST
+//- Duplicate Protections (A Person Joining Twice)
+//- Database Security 
+//- Mobile Formatting (Re-join Link
+
+
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
@@ -37,9 +43,6 @@ Router.route('/room/:_id', function () {
 Router.route('/manageRoom/:_id', function () {
   var params = this.params;
   var roomID = params._id;
-  
-  console.log(roomID);
-  
   this.render("manageRoom");
 });
 
@@ -116,14 +119,15 @@ if (Meteor.isClient) {
 			
 			//add new member
 			var newArr = Rooms.findOne({_id: getRoomID}).membersArr;
-			newArr.push(newRoomMember);
+
+			//TODO: check if person is already in room
 
 			//updates the rooms members
+			newArr.push(newRoomMember);
 			Rooms.update(
 				{ "_id" : getRoomID },
 				{ $set: { "membersArr" : newArr } }
 			);
-			
 			window.location.href = '/room/' + getRoomID;
 		}
 	});
@@ -136,6 +140,49 @@ if (Meteor.isClient) {
 			return params && params._id ? params._id : '';
 		}
     });
+    
+    //manage admin tools for mangageRoom Template
+    Template.manageRoom.events({
+		'click .delete': function () { 
+			var getAdminLink = window.location.href;
+			var adminKey = getAdminLink.substring(getAdminLink.length-10, getAdminLink.length);
+			var getRoomID = Rooms.findOne({adminKey: adminKey})._id.toString();	
+			console.log(getRoomID);
+			Rooms.remove(getRoomID);
+			window.location.href = '/';
+		},
+		
+		'click .closeRoom': function () { 
+			//get the admin key
+			var getAdminLink = window.location.href;
+			var adminKey = getAdminLink.substring(getAdminLink.length-10, getAdminLink.length);
+			
+			//get roomID based on admin key
+			var getRoomID = Rooms.findOne({adminKey: adminKey})._id.toString();	
+
+			//select random item from array	
+			var options = Rooms.findOne({_id: getRoomID}).optionsArr;
+			var finalChoice = options[Math.floor(Math.random()*options.length)];
+			
+			var getRoomStatus = Rooms.findOne({adminKey: adminKey}).isOpen;	
+			
+			if (getRoomStatus) {
+				Rooms.update(
+					{ "_id" : getRoomID },
+					{ $set: { "finalChoice" : finalChoice } }
+				);
+			
+				Rooms.update(
+					{ "_id" : getRoomID },
+					{ $set: { "isOpen" : false } }
+				);
+			}
+			else {
+				window.alert("Room is already closed");
+			}
+			
+		}
+	});
     
     //get parameters in a display url
 	Template.displayRoom.helpers({
@@ -168,6 +215,7 @@ if (Meteor.isClient) {
 			var options = Rooms.findOne({_id: params._id}).optionsArr;
 			return options;
 		},
+		//display final choice
 		choice: function () {
 			var params =  Router.current().params;			
 			var getChoice = Rooms.findOne({_id: params._id}).finalChoice.toString();		
@@ -196,6 +244,16 @@ if (Meteor.isClient) {
 			console.log()	
 			return url + "/joinRoom/" + getRoomLink;
 		},
+		//display room status
+		roomStatus: function () {
+			var params =  Router.current().params;			
+			var getRoomStatus = Rooms.findOne({adminKey: params._id}).isOpen;	
+				
+			if (getRoomStatus) {
+				return "Open"
+			}
+			return "Closed";
+		},
 		//display admin name
 		adminName: function () {
 			var params =  Router.current().params;			
@@ -214,6 +272,7 @@ if (Meteor.isClient) {
 			var options = Rooms.findOne({adminKey: params._id}).optionsArr;
 			return options;
 		},
+		//display final choice
 		choice: function () {
 			var params =  Router.current().params;			
 			var getChoice = Rooms.findOne({adminKey: params._id}).finalChoice.toString();		
