@@ -3,12 +3,10 @@
 //- Database Security 
 //- Mobile Formatting (Re-join Link
 
+
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
-
-//create a new collection of rooms
-Rooms = new Meteor.Collection('rooms');
 
 
 //main template
@@ -55,7 +53,7 @@ Router.route('/about', function () {
 
 //make sure you're client side
 if (Meteor.isClient) {
-		
+	Meteor.subscribe("rooms");
 	//events for the creation of a room
 	Template.addRoom.events({
 		'click .submit': function () {
@@ -77,7 +75,7 @@ if (Meteor.isClient) {
 			//timestamp on submit
 			var timeStamp = Math.floor(Date.now() / 1000);
 			
-			//funtion that generates a random alphanumeric code for admin key
+			//funtion that generates a random alphanumeric code
 			function stringGen(len){
 				var text = "";
 				var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -85,15 +83,27 @@ if (Meteor.isClient) {
 					text += charset.charAt(Math.floor(Math.random() * charset.length));
 				return text;
 				}
-			var adminKey = stringGen(10);
 			
-			var finalChoice = "A choice will be made when the room is closed";
+			//add relevant infor to collection
+			Rooms.insert({
+				optionsList: options,
+				optionsArr: options.split(','),
+				admin: admin,
+				adminKey: stringGen(10),
+				membersArr: members,
+				roomName: roomName,
+				isOpen: isOpen,
+				finalChoice: "A choice will be made when the room is closed",
+				timeStamp: timeStamp
+			});
 			
-
+			//clears text fields
+			$('.optionsList').val('');
+			$('.adminName').val('');
+			
 			//displays the newly generated roomID
-			Rooms = Meteor.subscribe('addRoom', options, admin, adminKey, members, roomName, isOpen, finalChoice, timeStamp);
-			console.log(getRoom.adminKey.toString());
-			//window.location.href = '/manageRoom/' + getRoomID.toString();
+			var newRoomID = Rooms.findOne({}, {sort: {timeStamp: -1}});
+			window.location.href = '/manageRoom/' + newRoomID.adminKey.toString();
 		}
 	});
 	

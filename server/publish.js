@@ -3,6 +3,11 @@
 Rooms = new Meteor.Collection('rooms');
 
 if (Meteor.isServer) {
+	
+	Meteor.publish('rooms', function() {
+		return Rooms.find();
+	});
+	
 	Meteor.publish('addRoom', function publishFunction(options, admin, adminKey, members, roomName, isOpen, finalChoice, timeStamp) {
 		//add relevant infor to collection
 		Rooms.insert({
@@ -17,6 +22,6 @@ if (Meteor.isServer) {
 			timeStamp: timeStamp
 		});
 		//var getRoomID = Rooms.findOne({}, {sort: {timeStamp: -1}});
-		return Rooms.find({}, {sort: {timeStamp: -1}});
+		return Rooms.find();
 	});
 }
