@@ -2,7 +2,7 @@
 //- Duplicate Protections (A Person Joining Twice)
 //- Database Security 
 //- Mobile Formatting (Re-join Link
-
+//- insta-copy shared links
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
