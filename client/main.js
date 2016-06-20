@@ -2,47 +2,50 @@
 //- Duplicate Protections (A Person Joining Twice)
 //- Database Security 
 //- Mobile Formatting (Re-join Link
-
+Rooms = new Meteor.Collection('rooms');
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
 
-
+//ROUTES
 //main template
+
 Router.route('/', function () {
-  this.render('index');
+	this.render('index');
 });
 
 //addRoom template
 Router.route('/addRoom', function () {
-  this.render('addRoom');
+	this.render('addRoom');
 });
 
 //join template
 Router.route('/joinRoom', function () {
-  this.render('joinRoom');
+	this.render('joinRoom');
 });
 
 //join with shareable url template
 Router.route('/joinRoom/:_id', function () {   
-  this.render('joinRoom');
+	this.render('joinRoom');
 });
 
 // display template 
 Router.route('/room/:_id', function () {
-  var params = this.params;
-  var roomID = params._id;
-  
-  console.log(roomID);
-  
-  this.render("displayRoom");
+	//window.onbeforeunload = function() {
+	//	return "Leaving this page will abort the Room. Other Room Memebers will be able to see it was you that left. Do you want to continue?";
+	//}
+
+	var params = this.params;
+	var roomID = params._id;
+    
+	this.render("displayRoom");
 });
 
 // display admin template 
 Router.route('/manageRoom/:_id', function () {
   var params = this.params;
-  var roomID = params._id;
+  var adminKey = params._id;
   this.render("manageRoom");
 });
 
@@ -53,230 +56,125 @@ Router.route('/about', function () {
 
 //make sure you're client side
 if (Meteor.isClient) {
-	Meteor.subscribe("rooms");
-	//events for the creation of a room
+	
+	//events for creating a room
 	Template.addRoom.events({
 		'click .submit': function () {
-			//get the options list
-			var options = $('.optionsList').val();
 			
-			//get creator of room
-			var admin = $('.adminName').val();
+			//get the roomID
+			var getRoomSize = $('.room-size').val();
 			
-			//get room name
-			var roomName = $('.roomName').val();
+			var getRoomAdmin = $('.room-admin').val();
 			
-			//make an array of the rooms members
-			var members = [admin];
+			var optionsCount = $('.options-count').val();
+
 			
-			//boolean of whether or not the room is open
-			var isOpen = true;
-			
-			//timestamp on submit
-			var timeStamp = Math.floor(Date.now() / 1000);
-			
-			//funtion that generates a random alphanumeric code
-			function stringGen(len){
-				var text = "";
-				var charset = "abcdefghijklmnopqrstuvwxyz0123456789";
-				for( var i=0; i < len; i++ )
-					text += charset.charAt(Math.floor(Math.random() * charset.length));
-				return text;
-				}
-			
-			//add relevant infor to collection
-			Rooms.insert({
-				optionsList: options,
-				optionsArr: options.split(','),
-				admin: admin,
-				adminKey: stringGen(10),
-				membersArr: members,
-				roomName: roomName,
-				isOpen: isOpen,
-				finalChoice: "A choice will be made when the room is closed",
-				timeStamp: timeStamp
-			});
-			
-			//clears text fields
-			$('.optionsList').val('');
-			$('.adminName').val('');
-			
-			//displays the newly generated roomID
-			var newRoomID = Rooms.findOne({}, {sort: {timeStamp: -1}});
-			window.location.href = '/manageRoom/' + newRoomID.adminKey.toString();
+			var adminKey = "";
+			Meteor.call("stringGen", 14, function(error, result){
+				if(error){
+					console.log(error);
+				} else {
+					console.log(result);
+					Meteor.call("insert", getRoomAdmin, getRoomSize, result, optionsCount);		
+					window.location.href = '/manageRoom/' + result;    
+       			}
+    		})
 		}
 	});
 	
-	//events for joining a room
-	Template.joinRoom.events({
+	Template.manageRoom.helpers({  
+		//display roomCode
+		roomCode: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getRoomID", params._id.toString(), function(error, result){
+				Session.set('roomID', result);
+    		});
+					
+			return Session.get('roomID');
+		},
+		//display adminLink
+		adminKey: function () {
+			var params =  Router.current().params;
+				
+			Meteor.call("getRoomAdminKey", params._id.toString(), function(error, result){
+				Session.set('adminKey', result);
+    		});
+    		
+    		var adminKey = Session.get('adminKey');
+			var url = location.origin = location.protocol + "//" + location.host;	
+			return url + "/manageRoom/" + adminKey;
+		},
+		//display roomID
+		joinLink: function () {
+			var params =  Router.current().params;	
+			
+			Meteor.call("getRoomID", params._id.toString(), function(error, result){
+				Session.set('roomID', result);
+    		});
+					
+			var getRoomLink = Session.get('roomID');
+			var url = location.origin = location.protocol + "//" + location.host;	
+			return url + "/joinRoom/" + getRoomLink;
+		},
+		//display admin name
+		adminName: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getRoomAdmin", params._id.toString(), function(error, result){
+				Session.set('adminName', result);
+    		});
+					
+			return Session.get('adminName');
+		},
+		//display roomMembers
+		roomMembers: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getNames", params._id.toString(), function(error, result){
+				Session.set('roomMembers', result);
+    		});
+			return Session.get('roomMembers');
+		},
+		memberSubmission: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getHashes", params._id.toString(), function(error, result){
+				Session.set('memberSubmission', result);
+    		});
+			return Session.get('memberSubmission');
+		},
+		roomSize: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getRoomSize", params._id.toString(), function(error, result){
+				Session.set('roomSize', result);
+    		});
+   			return Session.get('roomSize');
+		},
+		roomCapacity: function () {
+			var params =  Router.current().params;			
+			Meteor.call("getRoomCapacity", params._id.toString(), function(error, result){
+				Session.set('roomCapacity', result);
+    		});
+   			return Session.get('roomCapacity');
+		},
+    });
+    
+    Template.joinRoom.events({
 		'click .submit': function () {
 			
 			//get the roomID
 			var getRoomID = $('.joinID').val();
 			
 			//get the roomID
-			var newRoomMember = " " + $('.memberName').val();
+			var newRoomMember = "" + $('.memberName').val();
 			
-			//add new member
-			var newArr = Rooms.findOne({_id: getRoomID}).membersArr;
-
-			//TODO: check if person is already in room
-
-			//updates the rooms members
-			newArr.push(newRoomMember);
-			Rooms.update(
-				{ "_id" : getRoomID },
-				{ $set: { "membersArr" : newArr } }
-			);
-			window.location.href = '/room/' + getRoomID;
+			Meteor.call("addNewMember", getRoomID, newRoomMember);
+			
+			//window.location.href = '/room/' + getRoomID;
 		}
 	});
-	
-	
-	//get parameters in a join url
-	Template.joinRoom.helpers({
+    
+    Template.joinRoom.helpers({
         getId: function () {
 			var params =  Router.current().params;
 			return params && params._id ? params._id : '';
 		}
-    });
-    
-    //manage admin tools for mangageRoom Template
-    Template.manageRoom.events({
-		'click .delete': function () { 
-			var getAdminLink = window.location.href;
-			var adminKey = getAdminLink.substring(getAdminLink.length-10, getAdminLink.length);
-			var getRoomID = Rooms.findOne({adminKey: adminKey})._id.toString();	
-			console.log(getRoomID);
-			Rooms.remove(getRoomID);
-			window.location.href = '/';
-		},
-		
-		'click .closeRoom': function () { 
-			//get the admin key
-			var getAdminLink = window.location.href;
-			var adminKey = getAdminLink.substring(getAdminLink.length-10, getAdminLink.length);
-			
-			//get roomID based on admin key
-			var getRoomID = Rooms.findOne({adminKey: adminKey})._id.toString();	
-
-			//select random item from array	
-			var options = Rooms.findOne({_id: getRoomID}).optionsArr;
-			var finalChoice = options[Math.floor(Math.random()*options.length)];
-			
-			var getRoomStatus = Rooms.findOne({adminKey: adminKey}).isOpen;	
-			
-			if (getRoomStatus) {
-				Rooms.update(
-					{ "_id" : getRoomID },
-					{ $set: { "finalChoice" : finalChoice } }
-				);
-			
-				Rooms.update(
-					{ "_id" : getRoomID },
-					{ $set: { "isOpen" : false } }
-				);
-			}
-			else {
-				window.alert("Room is already closed");
-			}
-			
-		}
-	});
-    
-    //get parameters in a display url
-	Template.displayRoom.helpers({
-		//display room name
-        roomName: function () {
-			var params =  Router.current().params;			
-			var getRoomName = Rooms.findOne({_id: params._id}).roomName.toString();		
-			return getRoomName;
-		},
-		//display roomID
-		roomID: function () {
-			var getRoomLink = window.location.href;			
-			return getRoomLink;
-		},
-		//display admin name
-		adminName: function () {
-			var params =  Router.current().params;			
-			var getAdminName = Rooms.findOne({_id: params._id}).admin.toString();		
-			return getAdminName;
-		},
-		//display roomMembers
-		roomMembers: function () {
-			var params =  Router.current().params;			
-			var roomMembers = Rooms.findOne({_id: params._id}).membersArr;
-			return roomMembers;
-		},
-		//display options
-		options: function () {
-			var params =  Router.current().params;			
-			var options = Rooms.findOne({_id: params._id}).optionsArr;
-			return options;
-		},
-		//display final choice
-		choice: function () {
-			var params =  Router.current().params;			
-			var getChoice = Rooms.findOne({_id: params._id}).finalChoice.toString();		
-			return getChoice;
-		},
-    });
-	
-	//get parameters in a manage url
-	Template.manageRoom.helpers({
-		//display room name
-        roomName: function () {
-			var params =  Router.current().params;			
-			var getRoomName = Rooms.findOne({adminKey: params._id}).roomName.toString();		
-			return getRoomName;
-		},
-		//display adminLink
-		adminLink: function () {
-			var getAdminLink = window.location.href;			
-			return getAdminLink;
-		},
-		//display roomID
-		joinLink: function () {
-			var params =  Router.current().params;			
-			var getRoomLink = Rooms.findOne({adminKey: params._id})._id.toString();
-			var url = location.origin = location.protocol + "//" + location.host;	
-			console.log()	
-			return url + "/joinRoom/" + getRoomLink;
-		},
-		//display room status
-		roomStatus: function () {
-			var params =  Router.current().params;			
-			var getRoomStatus = Rooms.findOne({adminKey: params._id}).isOpen;	
-				
-			if (getRoomStatus) {
-				return "Open"
-			}
-			return "Closed";
-		},
-		//display admin name
-		adminName: function () {
-			var params =  Router.current().params;			
-			var getAdminName = Rooms.findOne({adminKey: params._id}).admin.toString();		
-			return getAdminName;
-		},
-		//display roomMembers
-		roomMembers: function () {
-			var params =  Router.current().params;			
-			var roomMembers = Rooms.findOne({adminKey: params._id}).membersArr;
-			return roomMembers;
-		},
-		//display options
-		options: function () {
-			var params =  Router.current().params;			
-			var options = Rooms.findOne({adminKey: params._id}).optionsArr;
-			return options;
-		},
-		//display final choice
-		choice: function () {
-			var params =  Router.current().params;			
-			var getChoice = Rooms.findOne({adminKey: params._id}).finalChoice.toString();		
-			return getChoice;
-		},
     });
 }

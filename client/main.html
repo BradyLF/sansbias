@@ -3,7 +3,7 @@
   <link href="bootstrap.min.css" rel="stylesheet">
   <link href="main.css" rel="stylesheet">
   <link href="animate.css" rel="stylesheet">
-  <meta name="viewport" content="width=device-width; initial-scale=1.0;maximum-scale=1.0; user-scalable=0;" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </head>
 
@@ -56,15 +56,29 @@
 	<div class="animated fadeIn content">
 		<h1>Create A Room</h1>
 		<hr class="full-width">
-		<h4>Type your options as a comma separated list</h4>
-		<input placeholder="one, two, three" type="text" class="optionsList" maxlength="40">
+		<h4>How many people will be in this room?</h4>
+		<select class="room-size"></select>
+		<h4>How many choices should there be?</h4>
+		<select class="options-count"></select>
 		<h4>Type your name</h4>
-		<input placeholder="Alice Roberts" type="text" class="adminName" maxlength="40">
-		<h4>Create a room name</h4>
-		<input placeholder="Restaurant Choices" type="text" class="roomName" maxlength="40"><br><br>
+		<input id="testying" placeholder="Alice Roberts" type="text" class="room-admin" maxlength="40"><br><br>
 		<button class="submit flat-button" type="submit" value="submit">Create Room</button>
 		<a href="google.com" id="roomID"></a>
 	</div>
+	<script>
+		$(function(){
+			var $select = $(".room-size");
+			for (i=2;i<=25;i++){
+				$select.append($('<option></option>').val(i).html(i))
+    		}
+		});
+		$(function(){
+			var $select = $(".options-count");
+			for (i=2;i<=10;i++){
+				$select.append($('<option></option>').val(i).html(i))
+    		}
+		});
+	</script>
 </template>
 
 <!-- join template-->
@@ -84,11 +98,11 @@
 <template name="displayRoom">
 	<div class="animated fadeIn content">
 		<h1 class="title">Welcome To Your Room: '{{roomName}}'</h1>
-		<h2 id="manage-title" class="subtitle">Rejoin this room with this link: {{roomID}}</h2>
+		<h2 id="manage-title" class="subtitle">This Room ID: {{roomID}}</h2>
 		<h3>Room Administrator:</h3>
 		<h4>{{adminName}}</h4>
 		<hr class="full-width">
-		<h3>Room Members:</h3>
+		<h3>Room Members ({{roomSize}}/{{roomCapacity}}):</h3>
 		<h4>{{roomMembers}}</h4>
 		<hr class="full-width">
 		<h3>Options:</h3>
@@ -103,29 +117,45 @@
 <!-- admin template-->
 <template name="manageRoom">
 	<div class="animated fadeIn content">
-		<h1 class="title" id="manage-title">Manage Your Room: '{{roomName}}'</h1>
+		<h1 class="title">Manage Your Room</h1>
 		<div id="roomInfo">
-			<h1 class="title">Room Information</h1>
-			<hr class="full-width">
-			<h3>Admin Link:</h3>
-			<h2 id="room-code" class="subtitle">{{adminLink}}</h2>
+			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
+			<h3>Room Information:</h3>
+			<table>
+				<tr>
+					<td>Room Administrator:</td>
+					<td class="link">{{adminName}}</td>
+  				</tr>
+  				<tr>
+					<td>Admin Key:</td>
+					<td class="link">{{adminKey}}</td>
+  				</tr>
+  				<tr>
+					<td>Invite Link:</td>
+					<td class="link">{{joinLink}}</td>
+  				</tr>
+			</table>
 			<hr class="left-incomplete">
-			<h3>Invite Link:</h3>
-			<h2 id="room-code" class="subtitle">{{joinLink}}</h2>
-			<hr class="left-incomplete">
-			<h3>Room Status:</h3>
-			<h4>{{roomStatus}}</h4>
-			<hr class="left-incomplete">
-			<h3>Room Administrator:</h3>
-			<h4>{{adminName}}</h4>
-			<hr class="left-incomplete">
-			<h3>Room Members:</h3>
-			<h4>{{roomMembers}}</h4>
+			<h3>Room Members ( {{roomSize}} of {{roomCapacity}} )</h3>
+			<table>
+				<tr>
+					<th>Name</th>
+					<th>Submitted</th>
+  				</tr>
+  				<tr>
+  				{{#each roomMembers}}
+					<td>{{this}}</td>
+				{{/each}}
+				{{#each memberSubmission}}
+					<td>{{this}}</td>
+				{{/each}}
+  				</tr>
+			</table>
 			<hr class="left-incomplete">
 			<h3>Options:</h3>
 			<h4>{{options}}</h4>
 			<hr class="left-incomplete">
-			<h3>Choice:</h3>
+			<h3>Final Choice:</h3>
 			<h4>{{choice}}</h4>
 			<hr class="left-incomplete">
 			<h1 class="title">Admin Tools</h1>

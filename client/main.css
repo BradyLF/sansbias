@@ -20,8 +20,47 @@ html, body {
 	color: white;
 }
 
+table {
+	border: 5px solid white;
+	border-color: white;
+	width: 100%
+}
+
+th {
+	border: 1px solid white;
+	width: 50%;
+	padding: 20px;
+	background-color: white !important;
+	color: #48505f !important;
+	font-size: medium;
+}
+
+td {
+	border: 5px solid white;
+	width: 50%;
+	padding: 20px;
+	font-size: medium;
+}
+
+.link {
+	border: 5px solid white;
+	width: 50%;
+	padding: 20px;
+	background-color: white !important;
+	color: #48505f !important;
+	font-size: medium;
+}
+
 .about-text {
 	text-align: justify; 
+}
+
+select {
+	border: none;
+	color: #48505f;
+	min-width: 300px;
+	margin-bottom: 20px;
+	
 }
 
 input {
@@ -69,7 +108,7 @@ input {
 	padding: 10px;
 	text-decoration: none;
 	border: none;
-	width: 70%;
+	width: 100%;
 }
 
 #manage-title {
@@ -133,12 +172,12 @@ input {
 }
 
 hr {
-	width: 70%;
+	width: 80%;
 	color: #fff;
 }
 
 .left-incomplete{
-	width: 70%;
+	width: 100%;
 	color: #fff;
 	margin-left: 0;
 }
