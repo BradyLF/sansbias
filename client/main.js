@@ -11,7 +11,7 @@ import './main.html';
 //ROUTES
 //main template
 
-Meteor.subscribe("rooms");
+//Meteor.subscribe("rooms");
 
 Router.route('/', function () {
 	this.render('index');
@@ -34,12 +34,10 @@ Router.route('/joinRoom/:_id', function () {
 
 // display template 
 Router.route('/room/:_id/:personID', function () {
-	//window.onbeforeunload = function() {
-	//	return "Leaving this page will abort the Room. Other Room Memebers will be able to see it was you that left. Do you want to continue?";
-	//}
-
 	var params = this.params;
 	var roomID = params._id;
+    
+    Meteor.subscribe("publicRoomInfo", roomID.toString());
     
 	this.render("displayRoom");
 });
@@ -48,6 +46,8 @@ Router.route('/room/:_id/:personID', function () {
 Router.route('/manageRoom/:_id', function () {
   var params = this.params;
   var adminKey = params._id;
+  Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
+
   this.render("manageRoom");
 });
 
@@ -90,7 +90,6 @@ if (Meteor.isClient) {
 			Meteor.call("getRoomIDByRoomID", params._id.toString(), function(error, result){
 				Session.set('roomID', result);
     		});
-					
 			return Session.get('roomID');
 		},
 		//display admin name
@@ -99,17 +98,14 @@ if (Meteor.isClient) {
 			Meteor.call("getRoomAdminByRoomID", params._id.toString(), function(error, result){
 				Session.set('adminName', result);
     		});
-					
 			return Session.get('adminName');
 		},
 		//display roomMembers
 		roomData: function () {
-			var params =  Router.current().params;		
-			return ReactiveMethod.call("getRoomDataArrByRoomID", params._id.toString());
+			return Rooms.findOne().peopleArr;
 		},
 		roomSize: function () {
-			var params =  Router.current().params;	
-			return ReactiveMethod.call("getRoomSizeByRoomID", params._id.toString());
+			return Rooms.findOne().roomSize;
 		},
 		personID: function () {
 			var params =  Router.current().params;			
@@ -117,21 +113,22 @@ if (Meteor.isClient) {
 		},
 		options: function () {
 			var params =  Router.current().params;			
-			
 			return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
 		}
     });
+    
+    Template.displayRoom.events({
+		'click .refresh': function () {
+			location.reload();
+		}
+	});
 
 		
 	Template.manageRoom.helpers({  
 		//display roomCode
 		roomCode: function () {
 			var params =  Router.current().params;			
-			Meteor.call("getRoomIDByAdminKey", params._id.toString(), function(error, result){
-				Session.set('roomID', result);
-    		});
-					
-			return Session.get('roomID');
+    		return ReactiveMethod.call("getRoomIDByAdminKey", params._id.toString());					
 		},
 		//display adminLink
 		adminKey: function () {
@@ -160,34 +157,16 @@ if (Meteor.isClient) {
 		//display admin name
 		adminName: function () {
 			var params =  Router.current().params;			
-			Meteor.call("getRoomAdminByAdminKey", params._id.toString(), function(error, result){
-				Session.set('adminName', result);
-    		});
-					
-			return Session.get('adminName');
+    		return ReactiveMethod.call("getRoomAdminByAdminKey", params._id.toString());					
 		},
 		//display roomMembers
 		roomData: function () {
-			var params =  Router.current().params;		
-			return ReactiveMethod.call("getRoomDataArrByAdminKey", params._id.toString());
+			return Rooms.findOne().peopleArr;
 		},
 		roomSize: function () {
-			var params =  Router.current().params;	
-			return ReactiveMethod.call("getRoomSizeByAdminKey", params._id.toString());
+			return Rooms.findOne().roomSize;
 		},
     });
-    
-    Template.displayRoom.events({
-		'click .refresh': function () {
-			if (window.location.href.toString().indexOf("#roomMemebers") > -1) {
-				location.reload();
-			}
-			else {
-				location.reload();
-				window.location.href = window.location.href + "#roomMemebers";
-			}
-		}
-	});
     
     Template.joinRoom.events({
 		'click .submit': function () {
