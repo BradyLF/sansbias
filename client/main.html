@@ -89,10 +89,11 @@
 <!-- display template-->
 <template name="displayRoom">
 	<div class="animated fadeIn content">
-		<h1 class="title">Welcome Your Room</h1>
+		<h1 class="title">Welcome {{personName}}</h1>
 		<div id="roomInfo">
-			<h3>Enter a Number 1 - {{options}}:</h3>
-			<input placeholder="e.g. 1" class="optionsCount" type="number" value="">
+			<h3>Please enter an integer 1 through {{options}}:</h3>
+			<input placeholder="e.g. 1" class="selectedOption" type="number" value="">
+		    <button class="submit flat-button" type="submit" value="submit">Submit Choice</button>
 			<hr class="left-incomplete">
 			<h3>Room Members ( {{roomSize}} Online )</h3>
 			<table>
@@ -126,10 +127,7 @@
 	
 	<script>
 		$(function(){
-			var optionsCount = document.getElementsByClassName('.optionsCount').toString();
-			
-			console.log(optionsCount + ";oij");
-			
+			var optionsCount = document.getElementsByClassName('.optionsCount').toString();				
 			var $select = $(".optionsList");
 			for (i=2;i<=optionsCount;i++){
 				$select.append($('<option></option>').val(i).html(i))

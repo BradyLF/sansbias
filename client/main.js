@@ -7,7 +7,7 @@ Rooms = new Meteor.Collection('rooms');
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-//Routes for varies templates                                                            //
+//Routes for variouss templates                                                          //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //route for static index
@@ -102,6 +102,14 @@ Template.displayRoom.helpers({
     	});
 		return Session.get('adminName');
 	},
+	//display admin name from method call
+	personName: function () {
+		var params =  Router.current().params;			
+		Meteor.call("getPersonName", params.personID.toString() ,params._id.toString(), function(error, result){
+			Session.set('personName', result);
+    	});
+		return Session.get('personName');
+	},
 	//display roomMembers from method call
 	roomData: function () {
 		return Rooms.findOne().peopleArr;
@@ -122,7 +130,60 @@ Template.displayRoom.helpers({
 	}
 });
     
-    
+//events for displayRoom
+Template.displayRoom.events({
+	
+	//a submission event
+	'click .submit': function () {
+		
+		//basic isInt function to check the validity of integer
+		function isInt(value){ 
+			if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+				return true;
+			} else { 
+				return false;
+	  		} 
+		}
+		
+		//basic string generation function that generates a random alphanumeric string
+		function stringGen(len) {
+			var text = "";
+			var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			for( var i=0; i < len; i++ )
+				text += charset.charAt(Math.floor(Math.random() * charset.length));
+			return text;
+    	}
+		
+		//get the roomID
+		var submittedBit = $('.selectedOption').val();
+		
+		var personID = Router.current().params.personID;
+		var roomID = Router.current().params._id;
+		
+		//if is it not null
+		if (submittedBit !== "" || submittedBit !== null) {
+			//if it is an integer 
+			if (isInt(submittedBit)){
+				//if it is within the given range
+				if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 1){
+					var randomBits = stringGen(8);
+					var submittedBit= submittedBit - 1;
+					var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
+					Meteor.call("submitHashByPersonID", roomID.toString(), personID.toString(), randomBits, submittedBit, hashedBits);
+				}	
+				else {
+					alert("You must enter an integer within the given range");
+				}		
+			}
+			else {
+				alert("You must enter an integer");
+			}
+		}
+		else {
+			alert("You must enter an integer");
+		}
+	},
+}); 
     
 ///////////////////////////////////////////////////////////////////////////////////////////
 //events and helpers for the manageRoom template                                         //

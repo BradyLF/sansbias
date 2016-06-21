@@ -10,20 +10,20 @@ Rooms = new Meteor.Collection('rooms');
 
 //publish public room info based on roomID
 Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
-    return Rooms.find({_id: roomID}, {fields: {roomSize: 1, "peopleArr.name": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
+    return Rooms.find({_id: roomID}, {fields: {roomSize: 1, optionsCount: 1, "peopleArr.name": 1, "peopleArr.hasSubmitted": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
 });
 //publish public room info based on adminKey
 Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
-    return Rooms.find({adminKey: adminKey}, {fields: {roomSize: 1, "peopleArr.name": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
+    return Rooms.find({adminKey: adminKey}, {fields: {roomSize: 1,  optionsCount: 1, "peopleArr.name": 1, "peopleArr.hasSubmitted": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
 });
 
 
 //meteor methods
 Meteor.methods({
 	
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //miscellaneous methods                                                                  //
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//miscellaneous methods                                                                  //
+///////////////////////////////////////////////////////////////////////////////////////////
     
 	//basic string generation function that generates a random alphanumeric string
     stringGen:function (len) {
@@ -36,19 +36,20 @@ Meteor.methods({
 	
 	
 	
-	///////////////////////////////////////////////////////////////////////////////////////////
-    //methods for the addRoom template, which creates a new room based on passed in form data//
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//methods for the addRoom template, which creates a new room based on passed in form data//
+///////////////////////////////////////////////////////////////////////////////////////////
     
     //inserts a new document into the collection with passed in parameters
 	insert:function (roomAdmin, roomSize, adminKey, optionsCount) {
 		//create a new entry into the array with the admin's info
 		var peopleArr = [{
 				name: roomAdmin, 
-				personID: Meteor.call("stringGen", 6), 
+				personID: Meteor.call("stringGen", 10), 
+				hasSubmitted: false,
 				submitttedBit: null, 
-				randomBits: Meteor.call("stringGen", 6), 
-				hashedBits: "Waiting for submission..."
+				randomBits:  null, 
+				hashedBits: "Waiting for all submissions to be made"
 			}]
 		
 		//generate a timeStamp
@@ -61,15 +62,16 @@ Meteor.methods({
 			adminKey: adminKey,
 			peopleArr: peopleArr,
 			timeStamp: timeStamp,
-			finalSum: null
+			finalSum: null,
+			allSubmitted: false
 		})
     },
     
     
     
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //methods for the manageRoom template, which retrieves data with an admin key            //
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//methods for the manageRoom template, which retrieves data with an admin key            //
+///////////////////////////////////////////////////////////////////////////////////////////
 
     //gets an adminKey with an admin key. This code is redudant but it present for consistency's sake
 	getRoomAdminKey:function (adminKey) {
@@ -86,9 +88,9 @@ Meteor.methods({
 	
 	
 	
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //methods for the displayRoom template, which retrieves data with an roomID              //
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//methods for the displayRoom template, which retrieves data with an roomID              //
+///////////////////////////////////////////////////////////////////////////////////////////
     
     //gets an roomID with a roomID. This code is redudant but it present for consistency's sake
     getRoomIDByByRoomID:function (roomID) {
@@ -98,16 +100,49 @@ Meteor.methods({
 	getRoomAdminByRoomID:function (roomID) {
 	    return Rooms.findOne({_id: roomID}).peopleArr[0].name;
 	},
+	//gets the person's name with the personID
+	getPersonName:function (personID, roomID) {
+	    var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = newPeopleArr.length;
+		
+		//searches the array and changes the apropriate person's info
+		for (i = 0; i <length; i++) {
+			if (newPeopleArr[i].personID == personID) {
+				return newPeopleArr[i].name;
+			}
+		}
+	},
 	//gets the number range decided upon room creation
 	getOptionsCountByRoomID:function (roomID) {
 	    return Rooms.findOne({_id: roomID}).optionsCount;
 	},
+	//updates the submitted hash by a user 
+	submitHashByPersonID:function (roomID, personID, randomBits, submitttedBit, hashedBits) {	
+		//gets the person arry and its lenght
+		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = newPeopleArr.length;
+		
+		//searches the array and changes the apropriate person's info
+		for (i = 0; i <length; i++) {
+			if (newPeopleArr[i].personID == personID) {
+				newPeopleArr[i].randomBits = randomBits;
+				newPeopleArr[i].submitttedBit = submitttedBit;
+				newPeopleArr[i].hashedBits = hashedBits;
+				break;
+			}
+		}
+		//updates the room
+		Rooms.update(
+			{ "_id" : roomID },
+			{ $set: { "peopleArr" : newPeopleArr} }
+		);
+	},
 	
 	
 	
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    //methods for the joinRoom template, which add a new member to a room with a given ID    //
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//methods for the joinRoom template, which add a new member to a room with a given ID    //
+///////////////////////////////////////////////////////////////////////////////////////////
     
     //adds a new room member to an existing room
 	addNewMember:function (roomID, newMemeberName) {
@@ -123,7 +158,7 @@ Meteor.methods({
 				personID: personID, 
 				submitttedBit: null, 
 				randomBits: Meteor.call("stringGen", 6), 
-				hashedBits: "Waiting for submission..."
+				hashedBits: "Waiting for submission"
 			});
 	    //gets the current room size, and increases it by one
 	    var newRoomSize = Rooms.findOne({_id: roomID}).roomSize + 1;
@@ -132,5 +167,7 @@ Meteor.methods({
 			{ "_id" : roomID },
 			{ $set: { "peopleArr" : newPeopleArr, "roomSize": newRoomSize} }
 		);		
+		
+		return personID;
 	},
 });
