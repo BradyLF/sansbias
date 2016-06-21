@@ -9,7 +9,7 @@ Rooms = new Meteor.Collection('rooms');
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 //publish public room info based on roomID
-Meteor.publish("publicRoomInfo", function (roomID) {
+Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
     return Rooms.find({_id: roomID}, {fields: {roomSize: 1, "peopleArr.name": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
 });
 //publish public room info based on adminKey

@@ -1,48 +1,40 @@
-//TODO LIST
-//- Duplicate Protections (A Person Joining Twice)
-//- Database Security 
-//- Mobile Formatting (Re-join Link
-Rooms = new Meteor.Collection('rooms');
-
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import './main.html';
 
-//ROUTES
-//main template
+//make the rooms collection
+Rooms = new Meteor.Collection('rooms');
 
-//Meteor.subscribe("rooms");
 
+///////////////////////////////////////////////////////////////////////////////////////////
+//Routes for varies templates                                                            //
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//route for static index
 Router.route('/', function () {
 	this.render('index');
 });
-
-//addRoom template
+//route for addRoom template
 Router.route('/addRoom', function () {
 	this.render('addRoom');
 });
-
-//join template
+//route for join template
 Router.route('/joinRoom', function () {
 	this.render('joinRoom');
 });
-
-//join with shareable url template
+//route for join with roomID parameter
 Router.route('/joinRoom/:_id', function () {   
 	this.render('joinRoom');
 });
-
-// display template 
+//route for displayRoom template 
 Router.route('/room/:_id/:personID', function () {
 	var params = this.params;
 	var roomID = params._id;
-    
-    Meteor.subscribe("publicRoomInfo", roomID.toString());
-    
+    //subscribe to public room info
+    Meteor.subscribe("publicRoomInfoByRoomID", roomID.toString());
 	this.render("displayRoom");
 });
-
-// display admin template 
+//rout for the admin management template 
 Router.route('/manageRoom/:_id', function () {
   var params = this.params;
   var adminKey = params._id;
@@ -50,143 +42,154 @@ Router.route('/manageRoom/:_id', function () {
 
   this.render("manageRoom");
 });
-
-//about template 
+//route for static about template 
 Router.route('/about', function () {
   this.render('about');
 });
 
-//make sure you're client side
-if (Meteor.isClient) {
-	
-	//events for creating a room
-	Template.addRoom.events({
-		'click .submit': function () {
-			
-			//get the roomID
-			var getRoomSize = $('.room-size').val();
-			
-			var getRoomAdmin = $('.room-admin').val();
-			
-			var optionsCount = $('.options-count').val();
-			
-			var adminKey = "";
-			Meteor.call("stringGen", 14, function(error, result){
-				if(error){
-					console.log(error);
-				} else {
-					console.log(result);
-					Meteor.call("insert", getRoomAdmin, getRoomSize, result, optionsCount);		
-					window.location.href = '/manageRoom/' + result;    
-       			}
-    		})
-		},
-	});
-	
-	Template.displayRoom.helpers({
-		//display roomCode
-		roomCode: function () {
-			var params =  Router.current().params;			
-			Meteor.call("getRoomIDByRoomID", params._id.toString(), function(error, result){
-				Session.set('roomID', result);
-    		});
-			return Session.get('roomID');
-		},
-		//display admin name
-		adminName: function () {
-			var params =  Router.current().params;			
-			Meteor.call("getRoomAdminByRoomID", params._id.toString(), function(error, result){
-				Session.set('adminName', result);
-    		});
-			return Session.get('adminName');
-		},
-		//display roomMembers
-		roomData: function () {
-			return Rooms.findOne().peopleArr;
-		},
-		roomSize: function () {
-			return Rooms.findOne().roomSize;
-		},
-		personID: function () {
-			var params =  Router.current().params;			
-   			return params.personID.toString();
-		},
-		options: function () {
-			var params =  Router.current().params;			
-			return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
-		}
-    });
-    
-    Template.displayRoom.events({
-		'click .refresh': function () {
-			location.reload();
-		}
-	});
 
-		
-	Template.manageRoom.helpers({  
-		//display roomCode
-		roomCode: function () {
-			var params =  Router.current().params;			
-    		return ReactiveMethod.call("getRoomIDByAdminKey", params._id.toString());					
-		},
-		//display adminLink
-		adminKey: function () {
-			var params =  Router.current().params;
-				
-			Meteor.call("getRoomAdminKey", params._id.toString(), function(error, result){
-				Session.set('adminKey', result);
-    		});
-    		
-    		var adminKey = Session.get('adminKey');
-			var url = location.origin = location.protocol + "//" + location.host;	
-			return url + "/manageRoom/" + adminKey;
-		},
-		//display roomID
-		joinLink: function () {
-			var params =  Router.current().params;	
-			
-			Meteor.call("getRoomIDByAdminKey", params._id.toString(), function(error, result){
-				Session.set('roomID', result);
-    		});
-					
-			var getRoomLink = Session.get('roomID');
-			var url = location.origin = location.protocol + "//" + location.host;	
-			return url + "/joinRoom/" + getRoomLink;
-		},
-		//display admin name
-		adminName: function () {
-			var params =  Router.current().params;			
-    		return ReactiveMethod.call("getRoomAdminByAdminKey", params._id.toString());					
-		},
-		//display roomMembers
-		roomData: function () {
-			return Rooms.findOne().peopleArr;
-		},
-		roomSize: function () {
-			return Rooms.findOne().roomSize;
-		},
-    });
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//events and helpers for the addRoom template                                            //
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//events for addRoom
+Template.addRoom.events({
+	
+	//a submission event
+	'click .submit': function () {
+		//get the roomID
+		var getRoomSize = $('.room-size').val();
+		//get the roomAdmin
+		var getRoomAdmin = $('.room-admin').val();
+		//get the number of options
+		var optionsCount = $('.options-count').val();
+		//generate the admin key, create the room, and redirect to new room
+		var adminKey = "";
+		Meteor.call("stringGen", 14, function(error, result){
+			if(error){
+				console.log(error);
+			} else {
+				console.log(result);
+				Meteor.call("insert", getRoomAdmin, getRoomSize, result, optionsCount);		
+				window.location.href = '/manageRoom/' + result;    
+      		}
+   		})
+	},
+});
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//events and helpers for the displayRoom template                                        //
+///////////////////////////////////////////////////////////////////////////////////////////	
+	
+//helpers for displaying the room
+Template.displayRoom.helpers({
+	//display roomCode from method call
+	roomCode: function () {
+		var params =  Router.current().params;			
+		Meteor.call("getRoomIDByRoomID", params._id.toString(), function(error, result){
+			Session.set('roomID', result);
+    	});
+		return Session.get('roomID');
+	},
+	//display admin name from method call
+	adminName: function () {
+		var params =  Router.current().params;			
+		Meteor.call("getRoomAdminByRoomID", params._id.toString(), function(error, result){
+			Session.set('adminName', result);
+    	});
+		return Session.get('adminName');
+	},
+	//display roomMembers from method call
+	roomData: function () {
+		return Rooms.findOne().peopleArr;
+	},
+	//displays the room size from subscribed data
+	roomSize: function () {
+		return Rooms.findOne().roomSize;
+	},
+	//displays the room size from url parameter
+	personID: function () {
+		var params =  Router.current().params;			
+   		return params.personID.toString();
+	},
+	//displays the room size from method call
+	options: function () {
+		var params =  Router.current().params;			
+		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
+	}
+});
     
-    Template.joinRoom.events({
-		'click .submit': function () {
-			
-			//get the roomID
-			var getRoomID = $('.joinID').val();
-			
-			//get the roomID
-			var newRoomMember = "" + $('.memberName').val();
-			
-			Meteor.call("addNewMember", getRoomID, newRoomMember, function(error, result){
-				window.location.href = '/room/' + getRoomID + "/" + result;
-    		});
-		}
-	});
     
-    Template.joinRoom.helpers({
-        getId: function () {
-			var params =  Router.current().params;
-			return params && params._id ? params._id : '';
-		}
-    });
-}
+    
+///////////////////////////////////////////////////////////////////////////////////////////
+//events and helpers for the manageRoom template                                         //
+///////////////////////////////////////////////////////////////////////////////////////////	
+	
+Template.manageRoom.helpers({  
+	//display roomCode
+	roomCode: function () {
+		var params =  Router.current().params;			
+    	return ReactiveMethod.call("getRoomIDByAdminKey", params._id.toString());					
+	},
+	//display adminLink
+	adminKey: function () {
+		var params =  Router.current().params;
+		Meteor.call("getRoomAdminKey", params._id.toString(), function(error, result){
+			Session.set('adminKey', result);
+    	});
+    	//return current url and the admin link
+    	var adminKey = Session.get('adminKey');
+		var url = location.origin = location.protocol + "//" + location.host;	
+		return url + "/manageRoom/" + adminKey;
+	},
+	//display roomID
+	joinLink: function () {
+		var params =  Router.current().params;	
+		Meteor.call("getRoomIDByAdminKey", params._id.toString(), function(error, result){
+			Session.set('roomID', result);
+    	});	
+		var getRoomLink = Session.get('roomID');
+		var url = location.origin = location.protocol + "//" + location.host;	
+		return url + "/joinRoom/" + getRoomLink;
+	},
+	//display admin name
+	adminName: function () {
+		var params =  Router.current().params;			
+    	return ReactiveMethod.call("getRoomAdminByAdminKey", params._id.toString());
+	},
+	//display roomMembers
+	roomData: function () {
+		return Rooms.findOne().peopleArr;
+	},
+	roomSize: function () {
+		return Rooms.findOne().roomSize;
+	},
+});
+    
+    
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//events and helpers for the joinRoom template                                           //
+///////////////////////////////////////////////////////////////////////////////////////////
+
+Template.joinRoom.events({
+	'click .submit': function () {
+		//get the roomID
+		var getRoomID = $('.joinID').val();
+		//get the roomID
+		var newRoomMember = "" + $('.memberName').val();
+		Meteor.call("addNewMember", getRoomID, newRoomMember, function(error, result){
+			window.location.href = '/room/' + getRoomID + "/" + result;
+    	});
+	}
+});
+    
+Template.joinRoom.helpers({
+    getId: function () {
+		var params =  Router.current().params;
+		return params && params._id ? params._id : '';
+	}
+});
