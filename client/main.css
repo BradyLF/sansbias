@@ -153,6 +153,19 @@ input {
 	text-decoration: none;
 }
 
+.refresh {
+	margin-left: 50%;
+	margin-right: 0;
+	color: white;
+	background-color: #DE4F4F;
+}
+
+.refresh:hover {
+	background-color: #48505f;
+	color: white;
+
+}
+
 .large-flat-button {
 	text-transform: uppercase;
 	background-color: #fff;
