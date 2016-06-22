@@ -4,6 +4,7 @@ import './main.html';
 
 //make the rooms collection
 Rooms = new Meteor.Collection('rooms');
+VerifyingInfo = new Meteor.Collection('verify');
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -31,10 +32,9 @@ Router.route('/room/:_id/:personID', function () {
 	var params = this.params;
 	var roomID = params._id;
 	var personID = params.personID;
-	
     //subscribe to public room info
     Meteor.subscribe("publicRoomInfoByRoomID", roomID.toString());
-
+	//display submission option if they haven't submitted already
 	Meteor.call('hasSubmitted', roomID, personID, function (err, hasSubmitted) {
         if (hasSubmitted) {
             Session.set('showSubmit',false);
@@ -47,12 +47,14 @@ Router.route('/room/:_id/:personID', function () {
 	this.render("displayRoom");
 });
 //rout for the admin management template 
-Router.route('/manageRoom/:_id', function () {
-  var params = this.params;
-  var adminKey = params._id;
-  Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
+Router.route('/manageRoom/:adminKey', function () {
+	var params = this.params;
+	var adminKey = params.adminKey;
+	Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
+    Meteor.subscribe("verfyingRoomInfo", adminKey.toString());
 
-  this.render("manageRoom");
+
+	this.render("manageRoom");
 });
 //route for static about template 
 Router.route('/about', function () {
@@ -135,7 +137,7 @@ Template.displayRoom.helpers({
 		var params =  Router.current().params;			
    		return params.personID.toString();
 	},
-	//displays the room size from method call
+	//displays the options count from method call
 	optionsCount: function () {
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
@@ -151,7 +153,6 @@ Template.displayRoom.events({
 	
 	//a submission event
 	'click .submit': function () {
-		
 		//basic isInt function to check the validity of integer
 		function isInt(value){ 
 			if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
@@ -160,7 +161,6 @@ Template.displayRoom.events({
 				return false;
 	  		} 
 		}
-		
 		//basic string generation function that generates a random alphanumeric string
 		function stringGen(len) {
 			var text = "";
@@ -168,14 +168,12 @@ Template.displayRoom.events({
 			for( var i=0; i < len; i++ )
 				text += charset.charAt(Math.floor(Math.random() * charset.length));
 			return text;
-    	}
-				
-		//get the roomID
+    	}	
+		//get the submitted but
 		var submittedBit = $('.selectedOption').val();
-		
+		//get params from url
 		var personID = Router.current().params.personID;
 		var roomID = Router.current().params._id;
-		
 		//if is it not null
 		if (submittedBit !== "" || submittedBit !== null) {
 			//if it is an integer 
@@ -185,7 +183,7 @@ Template.displayRoom.events({
 					var randomBits = stringGen(8);
 					var submittedBit= submittedBit - 1;
 					var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
-					Meteor.call("submitHashByPersonID", roomID.toString(), personID.toString(), randomBits, submittedBit, hashedBits);
+					Meteor.call("submitHash", roomID.toString(), personID.toString(), randomBits, submittedBit, hashedBits);
 					location.reload();
 				}	
 				else {
@@ -210,12 +208,12 @@ Template.manageRoom.helpers({
 	//display roomCode
 	roomCode: function () {
 		var params =  Router.current().params;			
-    	return ReactiveMethod.call("getRoomIDByAdminKey", params._id.toString());					
+    	return ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());					
 	},
 	//display adminLink
 	adminKey: function () {
 		var params =  Router.current().params;
-		Meteor.call("getRoomAdminKey", params._id.toString(), function(error, result){
+		Meteor.call("getRoomAdminKey", params.adminKey.toString(), function(error, result){
 			Session.set('adminKey', result);
     	});
     	//return current url and the admin link
@@ -226,7 +224,7 @@ Template.manageRoom.helpers({
 	//display roomID
 	joinLink: function () {
 		var params =  Router.current().params;	
-		Meteor.call("getRoomIDByAdminKey", params._id.toString(), function(error, result){
+		Meteor.call("getRoomIDByAdminKey", params.adminKey.toString(), function(error, result){
 			Session.set('roomID', result);
     	});	
 		var getRoomLink = Session.get('roomID');
@@ -236,15 +234,79 @@ Template.manageRoom.helpers({
 	//display admin name
 	adminName: function () {
 		var params =  Router.current().params;			
-    	return ReactiveMethod.call("getRoomAdminByAdminKey", params._id.toString());
+    	return ReactiveMethod.call("getRoomAdminByAdminKey", params.adminKey.toString());
 	},
 	//display roomMembers
 	roomData: function () {
 		return Rooms.findOne().peopleArr;
 	},
+	//gets current room size
 	roomSize: function () {
 		return Rooms.findOne().roomSize;
 	},
+	//displays the options count from method call
+	optionsCount: function () {
+		var params =  Router.current().params;			
+		return ReactiveMethod.call("getOptionsCountByAdminKey", params.adminKey.toString());
+	},
+	detectAllSubmitted: function () {
+		var params =  Router.current().params;			
+		if (Rooms.findOne().allSubmitted == true) {
+			console.log("All have been submitted");
+		}
+	}
+});
+
+Template.manageRoom.events({
+	
+	//a submission event
+	'click .submit': function () {
+		if (Rooms.findOne().allSubmitted == true) {
+			//basic isInt function to check the validity of integer
+			function isInt(value){ 
+				if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+					return true;
+				} else { 
+					return false;
+	  			} 
+			}
+			//basic string generation function that generates a random alphanumeric string
+			function stringGen(len) {
+				var text = "";
+				var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+				for( var i=0; i < len; i++ )
+					text += charset.charAt(Math.floor(Math.random() * charset.length));
+				return text;
+    		}	
+			//get the submitted bit
+			var submittedBit = $('.selectedOption').val();
+			//get params from url
+			var adminKey = Router.current().params.adminKey;
+			//if is it not null
+			if (submittedBit !== "" || submittedBit !== null) {
+				//if it is an integer 
+				if (isInt(submittedBit)){
+					//if it is within the given range
+					if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 1){
+						var randomBits = stringGen(8);
+						var submittedBit= submittedBit - 1;
+						var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
+						Meteor.call("submitAdminHash", adminKey.toString(), randomBits, submittedBit, hashedBits);
+						location.reload();
+					}	
+					else {
+						alert("You must enter an integer within the given range");
+					}		
+				}
+				else {
+					alert("You must enter an integer");
+				}
+			}
+			else {
+				alert("You must enter an integer");
+			}
+		}
+	}
 });
     
     

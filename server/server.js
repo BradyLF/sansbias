@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 //create a new collection of rooms
 Rooms = new Meteor.Collection('rooms');
+VerifyingInfo = new Meteor.Collection('verify');
 
 
 
@@ -13,7 +14,8 @@ Rooms = new Meteor.Collection('rooms');
 Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
     return Rooms.find({_id: roomID}, {fields: {
 	    roomSize: 1, 
-	    optionsCount: 1, 
+	    optionsCount: 1,
+	    allSubmitted: 1, 
 	    "peopleArr.name": 1, 
 	    "peopleArr.hasSubmitted": 1, 
 	    "peopleArr.hashedBits": 1
@@ -23,11 +25,26 @@ Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
 Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
     return Rooms.find({adminKey: adminKey}, {fields: {
 	    roomSize: 1,  
-	    optionsCount: 1, 
+	    optionsCount: 1,
+	    allSubmitted: 1,  
 	    "peopleArr.name": 1, 
 	    "peopleArr.hasSubmitted": 1, 
 	    "peopleArr.hashedBits": 1
 	    }});
+});
+
+//publish public room info based on adminKey
+Meteor.publish("verfyingRoomInfo", function (adminKey) {
+	return VerifyingInfo.find({adminKey: adminKey}, {fields: {
+		roomSize: 1,  
+		optionsCount: 1,
+		allSubmitted: 1,  
+		adminKey: 1,
+		"peopleArr.name": 1, 
+	    "peopleArr.submittedBit": 1, 
+	    "peopleArr.randomBits": 1, 
+	    "peopleArr.hashedBits": 1
+	}}, {limit: 1 });
 });
 
 
@@ -60,7 +77,7 @@ Meteor.methods({
 				name: roomAdmin, 
 				personID: Meteor.call("stringGen", 10), 
 				hasSubmitted: false,
-				submitttedBit: null, 
+				submittedBit: null, 
 				randomBits:  null, 
 				hashedBits: "Waiting for all submissions to be made"
 			}]
@@ -76,30 +93,12 @@ Meteor.methods({
 			peopleArr: peopleArr,
 			timeStamp: timeStamp,
 			finalSum: null,
-			allSubmitted: false
+			allSubmitted: false,
+			adminSubmitted: false
 		})
     },
     
-    
-    
-///////////////////////////////////////////////////////////////////////////////////////////
-//methods for the manageRoom template, which retrieves data with an admin key            //
-///////////////////////////////////////////////////////////////////////////////////////////
-
-    //gets an adminKey with an admin key. This code is redudant but it present for consistency's sake
-	getRoomAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey}).adminKey;
-	},
-	//gets the room admin with an admin key 
-	getRoomAdminByAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey}).peopleArr[0].name;
-	},
-	//gets the room ID with an admin key
-	getRoomIDByAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey})._id.toString();
-	},
-	
-	
+  
 	
 ///////////////////////////////////////////////////////////////////////////////////////////
 //methods for the displayRoom template, which retrieves data with an roomID              //
@@ -130,7 +129,7 @@ Meteor.methods({
 	    return Rooms.findOne({_id: roomID}).optionsCount;
 	},
 	//updates the submitted hash by a user 
-	submitHashByPersonID:function (roomID, personID, randomBits, submitttedBit, hashedBits) {	
+	submitHash:function (roomID, personID, randomBits, submittedBit, hashedBits) {	
 		//gets the person arry and its lenght
 		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 		var length = newPeopleArr.length;
@@ -144,7 +143,7 @@ Meteor.methods({
 				}
 				else {
 					newPeopleArr[i].randomBits = randomBits;
-					newPeopleArr[i].submitttedBit = submitttedBit;
+					newPeopleArr[i].submittedBit = submittedBit;
 					newPeopleArr[i].hasSubmitted = true;
 					newPeopleArr[i].hashedBits = hashedBits;
 					break;
@@ -155,6 +154,26 @@ Meteor.methods({
 		Rooms.update(
 			{ "_id" : roomID },
 			{ $set: { "peopleArr" : newPeopleArr} }
+		);
+		
+		//gets the new person arry and its lenght
+		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = peopleArr.length;
+		
+		var allSubmitted = true;
+		//searches the array and changes the apropriate person's info
+		for (i = 1; i <length; i++) {
+			if (peopleArr[i].hasSubmitted){
+				allSubmitted = true;
+			}
+			else {
+				allSubmitted = false;
+				break;
+			}
+		}
+		Rooms.update(
+			{ "_id" : roomID },
+			{ $set: { "allSubmitted" : allSubmitted} }
 		);
 	},
 	//updates the submitted hash by a user 
@@ -176,7 +195,56 @@ Meteor.methods({
 			}
 		}
 	},
-			
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//methods for the manageRoom template, which retrieves data with an admin key            //
+///////////////////////////////////////////////////////////////////////////////////////////
+
+    //gets an adminKey with an admin key. This code is redudant but it present for consistency's sake
+	getRoomAdminKey:function (adminKey) {
+	    return Rooms.findOne({adminKey: adminKey}).adminKey;
+	},
+	//gets the room admin with an admin key 
+	getRoomAdminByAdminKey:function (adminKey) {
+	    return Rooms.findOne({adminKey: adminKey}).peopleArr[0].name;
+	},
+	//gets the room ID with an admin key
+	getRoomIDByAdminKey:function (adminKey) {
+	    return Rooms.findOne({adminKey: adminKey})._id.toString();
+	},
+	//gets the number range decided upon room creation
+	getOptionsCountByAdminKey:function (adminKey) {
+	    return Rooms.findOne({adminKey: adminKey}).optionsCount;
+	},	
+	submitAdminHash:function (adminKey, randomBits, submittedBit, hashedBits) {	
+		//gets the person arry and its lenght
+		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		//protection against double submission
+		
+		if (newPeopleArr[0].hasSubmitted == true){
+			//do nothing, it is a double submit
+		}
+		else {
+			newPeopleArr[0].randomBits = randomBits;
+			newPeopleArr[0].submittedBit = submittedBit;
+			newPeopleArr[0].hasSubmitted = true;
+			newPeopleArr[0].hashedBits = hashedBits;
+		}
+		//updates the room
+		Rooms.update(
+			{ "adminKey" : adminKey },
+			{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
+		);
+		
+		VerifyingInfo.insert({
+			roomSize: 1,
+			adminKey: adminKey,
+			peopleArr: newPeopleArr, 
+		})
+		
+	},		
 	
 	
 	
@@ -197,7 +265,7 @@ Meteor.methods({
 				name: newMemeberName, 
 				personID: personID, 
 				hasSubmitted: false,
-				submitttedBit: null, 
+				submittedBit: null, 
 				randomBits: null, 
 				hashedBits: "Waiting for submission"
 			});
@@ -206,7 +274,7 @@ Meteor.methods({
 		//updates the room
 		Rooms.update(
 			{ "_id" : roomID },
-			{ $set: { "peopleArr" : newPeopleArr, "roomSize": newRoomSize} }
+			{ $set: { "peopleArr" : newPeopleArr, "roomSize": newRoomSize, "allSubmitted": false} }
 		);		
 		
 		return personID;
