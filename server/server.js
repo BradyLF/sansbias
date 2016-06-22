@@ -4,17 +4,30 @@ import { Meteor } from 'meteor/meteor';
 Rooms = new Meteor.Collection('rooms');
 
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 //publications of public info, with a passed in roomID or adminKey                           //
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 //publish public room info based on roomID
 Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
-    return Rooms.find({_id: roomID}, {fields: {roomSize: 1, optionsCount: 1, "peopleArr.name": 1, "peopleArr.hasSubmitted": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
+    return Rooms.find({_id: roomID}, {fields: {
+	    roomSize: 1, 
+	    optionsCount: 1, 
+	    "peopleArr.name": 1, 
+	    "peopleArr.hasSubmitted": 1, 
+	    "peopleArr.hashedBits": 1
+	    }});
 });
 //publish public room info based on adminKey
 Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
-    return Rooms.find({adminKey: adminKey}, {fields: {roomSize: 1,  optionsCount: 1, "peopleArr.name": 1, "peopleArr.hasSubmitted": 1, "peopleArr.hashedBits": 1}}, {limit: 1});
+    return Rooms.find({adminKey: adminKey}, {fields: {
+	    roomSize: 1,  
+	    optionsCount: 1, 
+	    "peopleArr.name": 1, 
+	    "peopleArr.hasSubmitted": 1, 
+	    "peopleArr.hashedBits": 1
+	    }});
 });
 
 
@@ -125,10 +138,17 @@ Meteor.methods({
 		//searches the array and changes the apropriate person's info
 		for (i = 0; i <length; i++) {
 			if (newPeopleArr[i].personID == personID) {
-				newPeopleArr[i].randomBits = randomBits;
-				newPeopleArr[i].submitttedBit = submitttedBit;
-				newPeopleArr[i].hashedBits = hashedBits;
-				break;
+				//protection against double submission
+				if (newPeopleArr[i].hasSubmitted == true){
+					break;
+				}
+				else {
+					newPeopleArr[i].randomBits = randomBits;
+					newPeopleArr[i].submitttedBit = submitttedBit;
+					newPeopleArr[i].hasSubmitted = true;
+					newPeopleArr[i].hashedBits = hashedBits;
+					break;
+				}
 			}
 		}
 		//updates the room
@@ -137,6 +157,26 @@ Meteor.methods({
 			{ $set: { "peopleArr" : newPeopleArr} }
 		);
 	},
+	//updates the submitted hash by a user 
+	hasSubmitted:function (roomID, personID) {	
+		//gets the person arry and its lenght
+		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = peopleArr.length;
+		
+		//searches the array and changes the apropriate person's info
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].personID == personID) {
+				//protection against double submission
+				if (peopleArr[i].hasSubmitted == true){
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+		}
+	},
+			
 	
 	
 	
@@ -156,8 +196,9 @@ Meteor.methods({
 	    	{
 				name: newMemeberName, 
 				personID: personID, 
+				hasSubmitted: false,
 				submitttedBit: null, 
-				randomBits: Meteor.call("stringGen", 6), 
+				randomBits: null, 
 				hashedBits: "Waiting for submission"
 			});
 	    //gets the current room size, and increases it by one

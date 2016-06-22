@@ -1,0 +1,53 @@
+<!-- display template-->
+<template name="displayRoom">
+	<div class="animated fadeIn content">
+		<h1 class="title">Welcome {{personName}}</h1>
+		<div id="roomInfo">
+			{{#if showSubmit}}
+				<h3>Please enter an integer 1 through {{optionsCount}}:</h3>
+				<input placeholder="e.g. 1" class="selectedOption" type="number" value="">
+				<button class="submit flat-button" type="submit" value="submit">Submit Choice</button>
+			{{else}}
+				<h3>You have submitted your choice</h3>
+			{{/if}}
+			<hr class="left-incomplete">
+			<h3>Room Members ( {{roomSize}} Online )</h3>
+			<table>
+				<tr>
+					<th>Name </th>
+					<th>Submitted</th>
+  				</tr>
+  				{{#each roomData}}
+  				<tr>
+					<td>{{name}}</td>
+					<td>{{hashedBits}}</td>
+  				</tr>
+				{{/each}}
+			</table>
+			<hr class="left-incomplete">
+			<h3>Room Information:</h3> 
+			<table>
+				<tr>
+					<td>Room Administrator:</td>
+					<td class="link">{{adminName}}</td>
+  				</tr>
+  				<tr>
+					<td>Your Personal Identifier:</td>
+					<td class="link">{{personID}}</td>
+  				</tr>
+			</table>
+			<h3>Final Choice:</h3>
+			<h4>{{choice}}</h4>
+		</div>
+	</div>
+	
+	<script>
+		$(function(){
+			var optionsCount = document.getElementsByClassName('.optionsCount').toString();				
+			var $select = $(".optionsList");
+			for (i=2;i<=optionsCount;i++){
+				$select.append($('<option></option>').val(i).html(i))
+    		}
+    		});
+	</script>
+</template>

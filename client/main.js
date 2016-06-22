@@ -30,8 +30,20 @@ Router.route('/joinRoom/:_id', function () {
 Router.route('/room/:_id/:personID', function () {
 	var params = this.params;
 	var roomID = params._id;
+	var personID = params.personID;
+	
     //subscribe to public room info
     Meteor.subscribe("publicRoomInfoByRoomID", roomID.toString());
+
+	Meteor.call('hasSubmitted', roomID, personID, function (err, hasSubmitted) {
+        if (hasSubmitted) {
+            Session.set('showSubmit',false);
+        }
+        else {
+	        Session.set('showSubmit',true);
+        }
+	});
+    
 	this.render("displayRoom");
 });
 //rout for the admin management template 
@@ -124,10 +136,14 @@ Template.displayRoom.helpers({
    		return params.personID.toString();
 	},
 	//displays the room size from method call
-	options: function () {
+	optionsCount: function () {
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
-	}
+	},
+	//displays or doesn't display the submission option
+	showSubmit:function(){
+        return Session.get('showSubmit')
+    },
 });
     
 //events for displayRoom
@@ -153,7 +169,7 @@ Template.displayRoom.events({
 				text += charset.charAt(Math.floor(Math.random() * charset.length));
 			return text;
     	}
-		
+				
 		//get the roomID
 		var submittedBit = $('.selectedOption').val();
 		
@@ -170,6 +186,7 @@ Template.displayRoom.events({
 					var submittedBit= submittedBit - 1;
 					var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
 					Meteor.call("submitHashByPersonID", roomID.toString(), personID.toString(), randomBits, submittedBit, hashedBits);
+					location.reload();
 				}	
 				else {
 					alert("You must enter an integer within the given range");
@@ -235,6 +252,14 @@ Template.manageRoom.helpers({
 ///////////////////////////////////////////////////////////////////////////////////////////
 //events and helpers for the joinRoom template                                           //
 ///////////////////////////////////////////////////////////////////////////////////////////
+    
+Template.joinRoom.helpers({
+    getId: function () {
+		var params =  Router.current().params;
+		return params && params._id ? params._id : '';
+	}
+});
+
 
 Template.joinRoom.events({
 	'click .submit': function () {
@@ -245,12 +270,5 @@ Template.joinRoom.events({
 		Meteor.call("addNewMember", getRoomID, newRoomMember, function(error, result){
 			window.location.href = '/room/' + getRoomID + "/" + result;
     	});
-	}
-});
-    
-Template.joinRoom.helpers({
-    getId: function () {
-		var params =  Router.current().params;
-		return params && params._id ? params._id : '';
 	}
 });

@@ -1,0 +1,21 @@
+<!-- addroom template-->
+<template name="addRoom">
+	<div class="animated fadeIn content">
+		<h1>Create A Room</h1>
+		<hr class="full-width">
+		<h4>How many choices should there be?</h4>
+		<select class="options-count"></select>
+		<h4>Type your name</h4>
+		<input id="testying" placeholder="Alice Roberts" type="text" class="room-admin" maxlength="40"><br><br>
+		<button class="submit flat-button" type="submit" value="submit">Create Room</button>
+		<a href="google.com" id="roomID"></a>
+	</div>
+	<script>
+		$(function(){
+			var $select = $(".options-count");
+			for (i=2;i<=10;i++){
+				$select.append($('<option></option>').val(i).html(i))
+    		}
+		});
+	</script>
+</template>

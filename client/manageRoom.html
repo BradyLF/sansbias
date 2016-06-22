@@ -1,0 +1,51 @@
+<!-- admin template-->
+<template name="manageRoom">
+	<div class="animated fadeIn content">
+		<h1 class="title">Manage Your Room</h1>
+		<div id="roomInfo">
+			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
+			<h3>Room Information:</h3>
+			<table>
+				<tr>
+					<td>Room Administrator:</td>
+					<td class="link">{{adminName}}</td>
+  				</tr>
+  				<tr>
+					<td>Private Admin Key:</td>
+					<td class="link"><a target="_blank" href="{{adminKey}}">{{adminKey}}</a></td>
+  				</tr>
+  				<tr>
+					<td>Public Invite Link:</td>
+					<td class="link"><a target="_blank" href="{{joinLink}}">{{joinLink}}</a></td>
+  				</tr>
+			</table>
+			<hr class="left-incomplete">
+			<h3>Room Members ( {{roomSize}} Online )</h3>
+			<table>
+				<tr>
+					<th>Name</th>
+					<th>Submitted</th>
+  				</tr>
+  				{{#each roomData}}
+  				<tr>
+					<td>{{name}}</td>
+					<td>{{hashedBits}}</td>
+  				</tr>
+				{{/each}}
+			</table>
+			<hr class="left-incomplete">
+			<h3>Options:</h3>
+			<h4>{{options}}</h4>
+			<hr class="left-incomplete">
+			<h3>Final Choice:</h3>
+			<h4>{{choice}}</h4>
+			<hr class="left-incomplete">
+			<h1 class="title">Admin Tools</h1>
+			<hr class="full-width">
+		</div>
+		<div id="adminTools">
+			<button class="closeRoom admin-button" type="closeRoom" id="closeRoom" value="closeRoom">Close Room</button>
+			<button class="delete admin-button" type="delete" value="delete">Delete Room</button>
+		</div>
+	</div>
+</template>
