@@ -10,7 +10,6 @@
 			{{else}}
 				<h3>You have submitted your choice</h3>
 			{{/if}}
-			<hr>
 			<h3>Room Members ( {{roomSize}} Online )</h3>
 			<table>
 				<tr>
@@ -24,7 +23,6 @@
   				</tr>
 				{{/each}}
 			</table>
-			<hr>
 			<h3>Room Information:</h3>
 			<table>
 				<tr>
@@ -39,8 +37,7 @@
 					<td>Public Invite Link:</td>
 					<td class="link"><a target="_blank" href="{{joinLink}}">{{joinLink}}</a></td>
   				</tr>
-			</table>
+			</table><br><br><br>
 			{{verifyHashes}}
-			<hr>
 	</div>
 </template>

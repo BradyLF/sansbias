@@ -51,9 +51,9 @@
 
 html, body {
 	font-family: 'San Francisco', sans-serif;
-	background-color: #48505f;
+	background-color: #f0f0f0;
 	font-weight: 500;
-	color: #fff;
+	color: #4b4a4a;
 }
 
 .content {
@@ -64,12 +64,54 @@ html, body {
 #navbar {
 	font-family: 'San Francisco', sans-serif;
 	text-transform: uppercase;
-	background-color: #DE4F4F;
+	background-color: #3A7EB7;
 	font-weight: 700;
+	min-height: 80px;
+	box-shadow: 1px 5px 20px 1px rgba(0, 0, 0, 0.18);
+}
+
+#navbar ul{
+	float: right;
+}
+
+
+#navbar li{
+	font-family: 'San Francisco', sans-serif;
+	text-transform: uppercase;
+	background-color: #3A7EB7;
+	font-weight: 500;
+	padding-top: 15px;
+	font-size: large;
+	min-height: 80px !important;
+}
+
+#navbar li:hover{
+	font-family: 'San Francisco', sans-serif;
+	text-transform: uppercase;
+	background-color: #48505f;
+	font-weight: 500;
+	padding-top: 15px;
+	font-size: large;
+	min-height: 80px !important;
+}
+
+#navbar a{
+	background-color: transparent;
+}
+
+#navbar a:hover{
+	background-color: transparent;
 }
 
 .navbar-brand {
-	color: white;
+	padding-top: 15px !important;
+	padding-right: 60px !important;
+	font-size: large;
+	min-height: 80px !important;
+	color: #4b4a4a;
+	width: 200px;
+	text-transform: lowercase;
+	content: url(images/logo-white.svg);
 }
 
 .about-text {
@@ -77,36 +119,46 @@ html, body {
 }
 
 
+.main-title {
+	padding-top: 30px;
+	text-align: center;
+	color: #4b4a4a;
+	font-weight: 600;
+	font-size: 70px;
+	font-weight: 400;
+}
+
 .title {
 	padding-top: 30px;
 	text-align: center;
-	color: #fff;
+	color: #4b4a4a;
 	font-weight: 600;
-}
-
-.subtitle {
-	text-align: center;
-	font-size: medium;
-	color: #fff
 }
 
 #index {
 	width: 100%;
 	margin-left: 0;
-	margin-top: -20px;
-	height: calc(100vh - 50px);
-	min-height: 300px;
-	background: url(images/bg.jpg) no-repeat center center fixed; 
+	height: calc(100vh - 80px);
+	min-height: 600px;
+	text-align: center;
+	align-content: center;
+	background: url(images/bg.jpg) no-repeat center center; 
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
 	background-size: cover;
 }
 
+.logo {
+	content:url(images/logo.svg);
+	width: 50%;
+	text-align: center;
+}
 
 hr {
 	width: 100%;
-	color: #fff;
+	color: #4b4a4a;
+	border: 1px solid #4b4a4a;
 	
 }
 
@@ -115,33 +167,35 @@ hr {
 /*******************************************/
 
 table {
-	border: 5px solid white;
-	border-color: white;
-	width: 100%
+	border: 5px solid #d4d4d4;
+	border-color: #d4d4d4;
+	width: 100%;
+	box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.08);
 }
 
+
 th {
-	border: 1px solid white;
+	border: 1px solid #d4d4d4;
 	width: 50%;
 	padding: 20px;
-	background-color: white !important;
-	color: #48505f !important;
+	background-color: #d4d4d4 !important;
+	color: #4b4a4a !important;
 	font-size: medium;
 }
 
 td {
-	border: 5px solid white;
+	border: 5px solid #d4d4d4;
 	width: 50%;
 	padding: 20px;
 	font-size: medium;
 }
 
 .link {
-	border: 5px solid white;
+	border: 5px solid #d4d4d4;
 	width: 50%;
 	padding: 20px;
-	background-color: white !important;
-	color: #48505f !important;
+	background-color: #d4d4d4 !important;
+	color: #4b4a4a !important;
 	font-size: medium;
 }
 
@@ -152,17 +206,18 @@ td {
 
 
 select {
-	border: none;
-	color: #48505f;
+	border: 2px solid #d4d4d4;
+	color: #4b4a4a;
 	min-width: 300px;
 	margin-bottom: 20px;
 	font-size: large;
 	
+	
 }
 
 input {
-	border: none;
-	color: #48505f;
+	border: 2px solid #d4d4d4;
+	color: #4b4a4a;
 	padding: 5px;
 	min-width: 300px;
 	margin-bottom: 20px;
@@ -177,8 +232,8 @@ input {
 
 .flat-button {
 	text-transform: uppercase;
-	background-color: #fff;
-	color: #48505f;
+	background-color: #4b4a4a;
+	color: #f0f0f0;
 	padding: 10px;
 	text-decoration: none;
 	border: none;
@@ -186,9 +241,14 @@ input {
 }
 
 .flat-button:hover {
-	background-color: #f3f3f3;
-	color: #48505f;
+	text-transform: uppercase;
+	background-color: #717070;
+	color: #f0f0f0;
+	padding: 10px;
 	text-decoration: none;
+	border: none;
+	font-size: large;
+	
 }
 
 .selectedOption {
@@ -204,8 +264,8 @@ input {
 
 .large-flat-button {
 	text-transform: uppercase;
-	background-color: #fff;
-	color: #48505f;
+	background-color: #4b4a4a;
+	color: #f0f0f0;
 	padding: 14px;
 	text-decoration: none;
 	font-size: x-large;
@@ -215,8 +275,8 @@ input {
 }
 
 .large-flat-button:hover {
-	background-color: #e6e6e6;
-	color: #48505f;
+	background-color: #7b7979;
+	color: #f0f0f0;
 	text-decoration: none;
 }
 
@@ -226,8 +286,8 @@ input {
 
 #room-code {
 	margin-top: 30px;
-	background-color: #fff;
-	color: #48505f;
+	background-color: #4b4a4a;
+	color: #4b4a4a;
 	padding: 10px;
 	text-decoration: none;
 	border: none;
@@ -236,8 +296,8 @@ input {
 
 #manage-title {
 	margin-top: 30px;
-	background-color: #fff;
-	color: #48505f;
+	background-color: #d4d4d4;
+	color: #4b4a4a;
 	padding: 10px;
 	text-decoration: none;
 	border: none;
@@ -255,8 +315,8 @@ input {
 	}
 	#room-code {
 		margin-top: 30px;
-		background-color: #fff;
-		color: #48505f;
+		background-color: #4b4a4a;
+		color: #f0f0f0;
 		padding: 10px;
 		text-decoration: none;
 		border: none;
