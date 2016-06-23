@@ -79,7 +79,7 @@ Template.addRoom.events({
 		//get the roomAdmin
 		var getRoomAdmin = $('.room-admin').val();
 		//get the number of options
-		var optionsCount = $('.options-count').val();
+		var optionsCount = $('.options-count').val() - 1;
 		//generate the admin key, create the room, and redirect to new room
 		var adminKey = "";
 		Meteor.call("stringGen", 14, function(error, result){
@@ -134,6 +134,10 @@ Template.displayRoom.helpers({
 	roomSize: function () {
 		return Rooms.findOne().roomSize;
 	},
+	//displays the calculated final Sum
+	finalSum: function () {
+		return Rooms.findOne().finalSum;
+	},
 	//displays the room size from url parameter
 	personID: function () {
 		var params =  Router.current().params;			
@@ -161,8 +165,11 @@ Template.displayRoom.helpers({
 			}
 		}		
 		if (Rooms.findOne().readyToVerify && !hasVerified) {
+			location.reload();
+			console.log("verifying...");
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
+			var allHashesValid = true;
 			
 			
 			//searches the array and changes the apropriate person's info
@@ -178,9 +185,10 @@ Template.displayRoom.helpers({
 				}
 				else {
 					verifyArr.push(name + " is denying verification");
+					allHashesValid = false;
 				}
 			}
-			ReactiveMethod.call("userVerify", roomID, name, verifyArr)
+			ReactiveMethod.call("userVerify", roomID, name, personID, verifyArr, allHashesValid)
 		}
 	},
 	//displays or doesn't display the submission option
@@ -219,7 +227,7 @@ Template.displayRoom.events({
 			//if it is an integer 
 			if (isInt(submittedBit)){
 				//if it is within the given range
-				if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 1){
+				if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 0){
 					var randomBits = stringGen(8);
 					var submittedBit= submittedBit - 1;
 					var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
@@ -258,8 +266,7 @@ Template.manageRoom.helpers({
     	});
     	//return current url and the admin link
     	var adminKey = Session.get('adminKey');
-		var url = location.origin = location.protocol + "//" + location.host;	
-		return url + "/manageRoom/" + adminKey;
+		return adminKey;
 	},
 	//display roomID
 	joinLink: function () {
@@ -289,12 +296,17 @@ Template.manageRoom.helpers({
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByAdminKey", params.adminKey.toString());
 	},
+	//displays the calculated final Sum
+	finalSum: function () {
+		return Rooms.findOne().finalSum;
+	},
 	//verifies hashes submitted by peers
 	verifyHashes: function () {
 		var params =  Router.current().params;	
 		var adminKey = params.adminKey;		
 		var roomID = ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());
 		var name = ReactiveMethod.call("getRoomAdminByAdminKey", params.adminKey.toString());
+		var allHashesValid = true;
 		
 		var hasVerified = Rooms.findOne({_id: roomID}).peopleArr[0].hasVerifiedPeers;
 		
@@ -316,9 +328,10 @@ Template.manageRoom.helpers({
 				}
 				else {
 					verifyArr.push(name + " is denying verification");
+					allHashesValid = false;
 				}
 			}
-			ReactiveMethod.call("adminVerify", params.adminKey.toString(), verifyArr)
+			ReactiveMethod.call("adminVerify", params.adminKey.toString(), verifyArr, allHashesValid)
 		}
 	},
 	//displays or doesn't display the submission option
@@ -359,7 +372,7 @@ Template.manageRoom.events({
 					//if it is within the given range
 					if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 1){
 						var randomBits = stringGen(8);
-						var submittedBit= submittedBit - 1;
+						var submittedBit = submittedBit - 1;
 						var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
 						Meteor.call("submitAdminHash", adminKey.toString(), randomBits, submittedBit, hashedBits);
 						location.reload();

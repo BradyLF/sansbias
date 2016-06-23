@@ -18,6 +18,7 @@ Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
 			adminSubmitted: 1,
 			readyToVerify: 1,
 			isOpen: 1,
+			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
 			"peopleArr.randomBits": 1, 
@@ -35,6 +36,7 @@ Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
 			adminSubmitted: 1,
 			readyToVerify: 1,
 			isOpen: 1,
+			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
 			"peopleArr.hashedBits": 1
@@ -52,6 +54,7 @@ Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
 			adminSubmitted: 1,
 			readyToVerify: 1,
 			isOpen: 1,
+			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
 			"peopleArr.randomBits": 1, 
@@ -69,6 +72,7 @@ Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
 			adminSubmitted: 1,
 			readyToVerify: 1,
 			isOpen: 1,
+			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
 			"peopleArr.hashedBits": 1
@@ -126,7 +130,7 @@ Meteor.methods({
 			adminKey: adminKey,
 			peopleArr: peopleArr,
 			timeStamp: timeStamp,
-			finalSum: null,
+			finalSum: "to be determined",
 			allSubmitted: false,
 			adminSubmitted: false,
 			readyToVerify: false,
@@ -229,25 +233,55 @@ Meteor.methods({
 			}
 		}
 	},
-	//performs the admin's verification
-	userVerify:function (roomID, name, verifyArr) {
+	//performs the user's verification
+	userVerify:function (roomID, name, personID, verifyArr, allHashesValid) {
+		//gets the people array from the collection
 	    var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 	    var length = peopleArr.length;
-	    
+	    //pushes the verifications to each person
 	    for (i = 0; i <length; i++) {
 		     peopleArr[i].peerVerifications.push(verifyArr[i]);
 	    }
-	    
-	    for (i = 0; i <length; i++) {
-			if (peopleArr[i].name == name){
-				peopleArr[i].hasVerifiedPeers = true;
-			}
-		}		    
-	   	
+	    //if all the hashes passed verification, 
+	    //if not the user will never report it has verified it's peers, aborting the process
+	    if (allHashesValid){
+	    	//changes this user's status to having verified their peers
+			for (i = 0; i <length; i++) {
+				if (peopleArr[i].personID == personID){
+					peopleArr[i].hasVerifiedPeers = true;
+				}
+			}		    
+	   	}
+	   	//update the room with the verification
 	   	Rooms.update(
 			{ "_id" : roomID },
 			{ $set: { "peopleArr" : peopleArr} }
 		);
+		//iterates through the list checking if everyone has peer verified successfully
+		var allVerified = true;
+		peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		length = peopleArr.length;
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].hasVerifiedPeers == false){
+				allVerified = false;
+			}
+		}
+		//if all the peers have verified, calculate the final sum
+		if (allVerified) {
+			var finalSum = 0;
+			for (i = 0; i <length; i++) {
+				finalSum = finalSum + peopleArr[i].submittedBit;
+				console.log(finalSum);
+			}
+			//mod it by the options count
+			finalSum = finalSum % Rooms.findOne({_id: roomID}).optionsCount;
+			//update the sum
+			Rooms.update(
+				{ "_id" : roomID },
+				{ $set: { "finalSum" : finalSum} }
+			);
+			
+		}
 		
 	},	
 
@@ -274,20 +308,47 @@ Meteor.methods({
 	    return Rooms.findOne({adminKey: adminKey}).optionsCount;
 	},
 	//performs the admin's verification
-	adminVerify:function (adminKey, verifyArr) {
+	adminVerify:function (adminKey, verifyArr, allHashesValid) {
 	    var peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 	    var length = peopleArr.length;
 	    
 	    for (i = 0; i <length; i++) {
 		     peopleArr[i].peerVerifications.push(verifyArr[i]);
 	    }
-	    
-	    peopleArr[0].hasVerifiedPeers = true;
+	    if (allHashesValid) {
+	  		peopleArr[0].hasVerifiedPeers = true;
+	  	}
 	    
 	    Rooms.update(
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : peopleArr} }
 		);
+		
+		var allVerified = true;
+		
+		peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		length = peopleArr.length;
+		
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].hasVerifiedPeers == false){
+				allVerified = false;
+			}
+		}
+		
+		if (allVerified) {
+			var finalSum = 0;
+			
+			for (i = 0; i <length; i++) {
+				finalSum = finalSum + peopleArr[i].submittedBit;
+				console.log(finalSum);
+			}
+			finalSum = finalSum % Rooms.findOne({adminKey: adminKey}).optionsCount;
+			Rooms.update(
+				{ "_id" : roomID },
+				{ $set: { "finalSum" : finalSum} }
+			);
+			
+		}
 	    
 	},	
 	//submits the admin's hash and closes room

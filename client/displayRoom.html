@@ -4,11 +4,13 @@
 		<h1 class="title">Welcome {{personName}}</h1>
 		<div id="roomInfo">
 			{{#if showSubmit}}
-				<h3>Enter an integer 1 through {{optionsCount}}:</h3>
-				<input placeholder="e.g. 1" class="selectedOption" type="number" value="">
+				<h3>Enter an integer 0 through {{optionsCount}}:</h3>
+				<input placeholder="e.g. 0" class="selectedOption" type="number" value="">
 				<button class="submit flat-button" type="submit" value="submit">Submit Choice</button>
 			{{else}}
 				<h3>You have submitted your choice</h3>
+				<h3>The verified calculated sum is {{finalSum}}</h3>
+				<hr>
 			{{/if}}
 			<h3>Room Members ( {{roomSize}} Online )</h3>
 			<table>

@@ -111,7 +111,7 @@ html, body {
 	color: #4b4a4a;
 	width: 200px;
 	text-transform: lowercase;
-	content: url(images/logo-white.svg);
+	content: url(images/logo-white.png);
 }
 
 .about-text {
@@ -150,7 +150,7 @@ html, body {
 }
 
 .logo {
-	content:url(images/logo.svg);
+	content:url(images/logo.png);
 	width: 50%;
 	text-align: center;
 }
@@ -322,5 +322,15 @@ input {
 		border: none;
 		width: 100%;
 		font-size: small;
+	}
+	#navbar ul{
+		float: left;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	#navbar li{
+		width: 97vw;
+		margin-bottom: 0;
+		margin-top: 0;
 	}
 }
