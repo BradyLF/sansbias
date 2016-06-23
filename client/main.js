@@ -4,11 +4,10 @@ import './main.html';
 
 //make the rooms collection
 Rooms = new Meteor.Collection('rooms');
-VerifyingInfo = new Meteor.Collection('verify');
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-//Routes for variouss templates                                                          //
+//Routes for various templates                                                          //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //route for static index
@@ -27,6 +26,10 @@ Router.route('/joinRoom', function () {
 Router.route('/joinRoom/:_id', function () {   
 	this.render('joinRoom');
 });
+//route for static about template 
+Router.route('/about', function () {
+  this.render('about');
+});
 //route for displayRoom template 
 Router.route('/room/:_id/:personID', function () {
 	var params = this.params;
@@ -38,27 +41,26 @@ Router.route('/room/:_id/:personID', function () {
 	Meteor.call('hasSubmitted', roomID, personID, function (err, hasSubmitted) {
         if (hasSubmitted) {
             Session.set('showSubmit',false);
-        }
-        else {
+        } else {
 	        Session.set('showSubmit',true);
         }
-	});
-    
+	});  
 	this.render("displayRoom");
 });
-//rout for the admin management template 
+//route for the admin management template 
 Router.route('/manageRoom/:adminKey', function () {
 	var params = this.params;
 	var adminKey = params.adminKey;
 	Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
-    Meteor.subscribe("verfyingRoomInfo", adminKey.toString());
-
-
+	//display submission option if they haven't submitted already
+	Meteor.call('hasAdminSubmitted', adminKey, function (err, hasSubmitted) {
+        if (hasSubmitted) {
+            Session.set('showSubmit',false);
+        } else {
+	        Session.set('showSubmit',true);
+        }
+	});
 	this.render("manageRoom");
-});
-//route for static about template 
-Router.route('/about', function () {
-  this.render('about');
 });
 
 
@@ -142,6 +144,45 @@ Template.displayRoom.helpers({
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
 	},
+	//verifies hashes submitted by peers
+	verifyHashes: function () {
+		var params =  Router.current().params;	
+		var roomID = params._id;
+		var personID = params.personID;	
+		var name = Session.get('personName');
+		var hasVerified = false;
+		var getPeopleArr = Rooms.findOne({}).peopleArr;
+		var getLength = getPeopleArr.length;
+		var verifyArr = [];
+		
+		for (i = 0; i <getLength; i++) {
+			if (getPeopleArr[i].name == name){
+				hasVerified = Rooms.findOne({_id: roomID}).peopleArr[i].hasVerifiedPeers;
+			}
+		}		
+		if (Rooms.findOne().readyToVerify && !hasVerified) {
+			var peopleArr = Rooms.findOne({}).peopleArr;
+			var length = peopleArr.length;
+			
+			
+			//searches the array and changes the apropriate person's info
+			for (i = 0; i <length; i++) {
+				var submittedBit = peopleArr[i].submittedBit;
+				var randomBits = peopleArr[i].randomBits;
+				var hashedBits = peopleArr[i].hashedBits;
+				
+				var clientHash = CryptoJS.SHA256(submittedBit.toString() + randomBits.toString()).toString();
+				
+				if (clientHash == hashedBits){
+					verifyArr.push(name + " has verified");
+				}
+				else {
+					verifyArr.push(name + " is denying verification");
+				}
+			}
+			ReactiveMethod.call("userVerify", roomID, name, verifyArr)
+		}
+	},
 	//displays or doesn't display the submission option
 	showSubmit:function(){
         return Session.get('showSubmit')
@@ -149,8 +190,7 @@ Template.displayRoom.helpers({
 });
     
 //events for displayRoom
-Template.displayRoom.events({
-	
+Template.displayRoom.events({	
 	//a submission event
 	'click .submit': function () {
 		//basic isInt function to check the validity of integer
@@ -249,12 +289,42 @@ Template.manageRoom.helpers({
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByAdminKey", params.adminKey.toString());
 	},
-	detectAllSubmitted: function () {
-		var params =  Router.current().params;			
-		if (Rooms.findOne().allSubmitted == true) {
-			console.log("All have been submitted");
+	//verifies hashes submitted by peers
+	verifyHashes: function () {
+		var params =  Router.current().params;	
+		var adminKey = params.adminKey;		
+		var roomID = ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());
+		var name = ReactiveMethod.call("getRoomAdminByAdminKey", params.adminKey.toString());
+		
+		var hasVerified = Rooms.findOne({_id: roomID}).peopleArr[0].hasVerifiedPeers;
+		
+		if (Rooms.findOne().readyToVerify && !hasVerified) {
+			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
+			var length = peopleArr.length;
+			var verifyArr = [];
+		
+			//searches the array and changes the apropriate person's info
+			for (i = 0; i < length; i++) {
+				var submittedBit = peopleArr[i].submittedBit;
+				var randomBits = peopleArr[i].randomBits;
+				var hashedBits = peopleArr[i].hashedBits;
+				
+				var clientHash = CryptoJS.SHA256(submittedBit.toString() + randomBits.toString()).toString();
+								
+				if (clientHash == hashedBits){
+					verifyArr.push(name + " has verified");
+				}
+				else {
+					verifyArr.push(name + " is denying verification");
+				}
+			}
+			ReactiveMethod.call("adminVerify", params.adminKey.toString(), verifyArr)
 		}
-	}
+	},
+	//displays or doesn't display the submission option
+	showSubmit:function(){
+        return Session.get('showSubmit')
+    },
 });
 
 Template.manageRoom.events({
@@ -293,6 +363,7 @@ Template.manageRoom.events({
 						var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
 						Meteor.call("submitAdminHash", adminKey.toString(), randomBits, submittedBit, hashedBits);
 						location.reload();
+						Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
 					}	
 					else {
 						alert("You must enter an integer within the given range");
@@ -305,6 +376,8 @@ Template.manageRoom.events({
 			else {
 				alert("You must enter an integer");
 			}
+		} else {
+			alert("You must wait for everyone in the room to submit their choice first");
 		}
 	}
 });
@@ -327,10 +400,10 @@ Template.joinRoom.events({
 	'click .submit': function () {
 		//get the roomID
 		var getRoomID = $('.joinID').val();
-		//get the roomID
-		var newRoomMember = "" + $('.memberName').val();
-		Meteor.call("addNewMember", getRoomID, newRoomMember, function(error, result){
-			window.location.href = '/room/' + getRoomID + "/" + result;
-    	});
+			//get the roomID
+			var newRoomMember = "" + $('.memberName').val();
+			Meteor.call("addNewMember", getRoomID, newRoomMember, function(error, result){
+				window.location.href = '/room/' + getRoomID + "/" + result;
+    		});
 	}
 });

@@ -1,7 +1,58 @@
-@import url(https://fonts.googleapis.com/css?family=Montserrat);
+/*******************************************/
+/* Fonts!                                  */
+/*******************************************/
+
+
+/** Ultra Light */
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 100;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-ultralight-webfont.woff");
+}
+
+/** Thin */
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 200;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-thin-webfont.woff");
+}
+
+/** Regular */
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 400;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-regular-webfont.woff");
+}
+
+/** Medium */
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 500;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-medium-webfont.woff");
+}
+
+/** Semi Bold */
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 600;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-semibold-webfont.woff");
+}
+
+/** Bold */ 
+@font-face {
+  font-family: "San Francisco";
+  font-weight: 700;
+  src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-bold-webfont.woff");
+}
+
+/*******************************************/
+/* Body, index, and Site-Wide Styling      */
+/*******************************************/
+
 html, body {
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'San Francisco', sans-serif;
 	background-color: #48505f;
+	font-weight: 500;
 	color: #fff;
 }
 
@@ -11,14 +62,57 @@ html, body {
 }
 
 #navbar {
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'San Francisco', sans-serif;
 	text-transform: uppercase;
 	background-color: #DE4F4F;
+	font-weight: 700;
 }
 
 .navbar-brand {
 	color: white;
 }
+
+.about-text {
+	text-align: justify; 
+}
+
+
+.title {
+	padding-top: 30px;
+	text-align: center;
+	color: #fff;
+	font-weight: 600;
+}
+
+.subtitle {
+	text-align: center;
+	font-size: medium;
+	color: #fff
+}
+
+#index {
+	width: 100%;
+	margin-left: 0;
+	margin-top: -20px;
+	height: calc(100vh - 50px);
+	min-height: 300px;
+	background: url(images/bg.jpg) no-repeat center center fixed; 
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
+
+hr {
+	width: 100%;
+	color: #fff;
+	
+}
+
+/*******************************************/
+/* Styling for Tables and the Data in them */
+/*******************************************/
 
 table {
 	border: 5px solid white;
@@ -51,15 +145,18 @@ td {
 	font-size: medium;
 }
 
-.about-text {
-	text-align: justify; 
-}
+
+/*******************************************/
+/* Styling inputs, buttons, & select menus */
+/*******************************************/
+
 
 select {
 	border: none;
 	color: #48505f;
 	min-width: 300px;
 	margin-bottom: 20px;
+	font-size: large;
 	
 }
 
@@ -69,73 +166,13 @@ input {
 	padding: 5px;
 	min-width: 300px;
 	margin-bottom: 20px;
+	font-size: large;
 }
 
-#index {
-	width: 100%;
-	margin-left: 0;
-	margin-top: -20px;
-	height: calc(100vh - 50px);
-	min-height: 300px;
-	background: url(images/bg.jpg) no-repeat center center fixed; 
-	-webkit-background-size: cover;
-	-moz-background-size: cover;
-	-o-background-size: cover;
-	background-size: cover;
-}
-
-.title {
-	padding-top: 15px;
-	text-align: center;
-	color: #fff;
-}
-
-.subtitle {
-	text-align: center;
-	font-size: medium;
-	color: #fff
-}
 
 .button-container {
 	margin-top: 100px;
 	text-align: center;
-}
-
-#room-code {
-	margin-top: 30px;
-	background-color: #fff;
-	color: #48505f;
-	padding: 10px;
-	text-decoration: none;
-	border: none;
-	width: 100%;
-}
-
-#manage-title {
-	margin-top: 30px;
-	background-color: #fff;
-	color: #48505f;
-	padding: 10px;
-	text-decoration: none;
-	border: none;
-	width: 100%;
-}
-
-#adminTools {
-	text-align: center;
-}
-
-.admin-button {
-	text-transform: uppercase;
-	background-color: #fff;
-	color: #48505f;
-	padding: 10px;
-	text-decoration: none;
-	font-size: medium;
-	border: none;
-	margin: 30px;
-	padding: 30px;
-	margin-bottom: 100px;
 }
 
 .flat-button {
@@ -145,6 +182,7 @@ input {
 	padding: 10px;
 	text-decoration: none;
 	border: none;
+	font-size: large;
 }
 
 .flat-button:hover {
@@ -182,20 +220,32 @@ input {
 	text-decoration: none;
 }
 
-hr {
-	width: 80%;
-	color: #fff;
+/*******************************************/
+/* Styling room info display               */
+/*******************************************/
+
+#room-code {
+	margin-top: 30px;
+	background-color: #fff;
+	color: #48505f;
+	padding: 10px;
+	text-decoration: none;
+	border: none;
+	width: 100%;
 }
 
-.left-incomplete{
+#manage-title {
+	margin-top: 30px;
+	background-color: #fff;
+	color: #48505f;
+	padding: 10px;
+	text-decoration: none;
+	border: none;
 	width: 100%;
-	color: #fff;
-	margin-left: 0;
 }
 
-.full-width {
-	width: 100%;
-	color: #fff;
+#adminTools {
+	text-align: center;
 }
 
 @media only screen and (max-width: 768px) {

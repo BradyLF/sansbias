@@ -3,15 +3,19 @@
 	<div class="animated fadeIn content">
 		<h1 class="title">Welcome {{adminName}}</h1>
 			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
-			<h3>Enter an integer 1 through {{optionsCount}}:</h3>
-			<input placeholder="e.g. 1" class="selectedOption" type="number" value="">
-			<button class="submit flat-button" type="submit" value="submit">Close Room & Submit Choice</button>
-			<hr class="left-incomplete">
+			{{#if showSubmit}}
+				<h3>Enter an integer 1 through {{optionsCount}}:</h3>
+				<input placeholder="e.g. 1" class="selectedOption" type="number" value="">
+				<button class="submit flat-button" type="submit" value="submit">Close Room & Submit Choice</button>
+			{{else}}
+				<h3>You have submitted your choice</h3>
+			{{/if}}
+			<hr>
 			<h3>Room Members ( {{roomSize}} Online )</h3>
 			<table>
 				<tr>
 					<th>Name</th>
-					<th>Submitted</th>
+					<th>Hashed Submission</th>
   				</tr>
   				{{#each roomData}}
   				<tr>
@@ -20,7 +24,7 @@
   				</tr>
 				{{/each}}
 			</table>
-			<hr class="left-incomplete">
+			<hr>
 			<h3>Room Information:</h3>
 			<table>
 				<tr>
@@ -36,7 +40,7 @@
 					<td class="link"><a target="_blank" href="{{joinLink}}">{{joinLink}}</a></td>
   				</tr>
 			</table>
-			{{detectAllSubmitted}}
-			<hr class="left-incomplete">
+			{{verifyHashes}}
+			<hr>
 	</div>
 </template>

@@ -10,12 +10,12 @@
 			{{else}}
 				<h3>You have submitted your choice</h3>
 			{{/if}}
-			<hr class="left-incomplete">
+			<hr>
 			<h3>Room Members ( {{roomSize}} Online )</h3>
 			<table>
 				<tr>
 					<th>Name </th>
-					<th>Submitted</th>
+					<th>Hashed Submission</th>
   				</tr>
   				{{#each roomData}}
   				<tr>
@@ -24,7 +24,7 @@
   				</tr>
 				{{/each}}
 			</table>
-			<hr class="left-incomplete">
+			<hr>
 			<h3>Room Information:</h3> 
 			<table>
 				<tr>
@@ -39,6 +39,7 @@
 			<h3>Final Choice:</h3>
 			<h4>{{choice}}</h4>
 		</div>
+			{{verifyHashes}}
 	</div>
 	
 	<script>
