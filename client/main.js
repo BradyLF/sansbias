@@ -148,6 +148,34 @@ Template.displayRoom.helpers({
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
 	},
+		//displays the calculated final Sum
+	gatherHashes: function () {
+		var params =  Router.current().params;	
+		var roomID = params._id;
+		var personID = params.personID;	
+		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = peopleArr.length;
+		var hashesGathered = false;
+				
+		if (Rooms.findOne().readyToVerify) {
+			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
+			var length = peopleArr.length;
+			var gatheredHashes = [];
+		
+			//searches the array and changes the apropriate person's info
+			for (i = 0; i < length; i++) {
+				gatheredHashes.push(peopleArr[i].hashedBits);
+			}
+			localStorage.setItem("gatheredHashes", gatheredHashes);
+			var randomBits = localStorage.getItem("randomBits");
+			var submittedBit = localStorage.getItem("submittedBit");
+			hashesGathered = true;
+			
+			if (hashesGathered){
+				Meteor.call("submitUserBits", roomID.toString(), randomBits, submittedBit, personID);
+			}
+		}
+	},
 	//verifies hashes submitted by peers
 	verifyHashes: function () {
 		var params =  Router.current().params;	
@@ -155,6 +183,7 @@ Template.displayRoom.helpers({
 		var personID = params.personID;	
 		var name = Session.get('personName');
 		var hasVerified = false;
+		var hashesGathered = false;
 		var getPeopleArr = Rooms.findOne({}).peopleArr;
 		var getLength = getPeopleArr.length;
 		var verifyArr = [];
@@ -162,9 +191,12 @@ Template.displayRoom.helpers({
 		for (i = 0; i <getLength; i++) {
 			if (getPeopleArr[i].name == name){
 				hasVerified = Rooms.findOne({_id: roomID}).peopleArr[i].hasVerifiedPeers;
+				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered
 			}
-		}		
-		if (Rooms.findOne().readyToVerify && !hasVerified) {
+		}	
+		
+	
+		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
 			location.reload();
 			console.log("verifying...");
 			var peopleArr = Rooms.findOne({}).peopleArr;
@@ -189,6 +221,7 @@ Template.displayRoom.helpers({
 				}
 			}
 			ReactiveMethod.call("userVerify", roomID, name, personID, verifyArr, allHashesValid)
+			localStorage.clear();
 		}
 	},
 	//displays or doesn't display the submission option
@@ -229,9 +262,10 @@ Template.displayRoom.events({
 				//if it is within the given range
 				if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 0){
 					var randomBits = stringGen(8);
-					var submittedBit= submittedBit - 1;
+					localStorage.setItem("submittedBit", submittedBit);
+					localStorage.setItem("randomBits", randomBits);
 					var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
-					Meteor.call("submitHash", roomID.toString(), personID.toString(), randomBits, submittedBit, hashedBits);
+					Meteor.call("submitHash", roomID.toString(), personID.toString(), hashedBits);
 					location.reload();
 				}	
 				else {
@@ -300,6 +334,34 @@ Template.manageRoom.helpers({
 	finalSum: function () {
 		return Rooms.findOne().finalSum;
 	},
+	//displays the calculated final Sum
+	gatherHashes: function () {
+		var params =  Router.current().params;	
+		var adminKey = params.adminKey;	
+		var roomID = ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());
+		
+		var hashesGathered = false
+		
+		if (Rooms.findOne().readyToVerify) {
+			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
+			var length = peopleArr.length;
+			var gatheredHashes = [];
+		
+			//searches the array and changes the apropriate person's info
+			for (i = 0; i < length; i++) {
+				gatheredHashes.push(peopleArr[i].hashedBits);
+			}
+			hashesGathered = true;
+			localStorage.setItem("gatheredHashes", gatheredHashes);
+			var randomBits = localStorage.getItem("randomBits");
+			var submittedBit = localStorage.getItem("submittedBit");
+
+			if (hashesGathered){
+				console.log("test");
+				Meteor.call("submitAdminBits", adminKey.toString(), randomBits, submittedBit);
+			}
+		}
+	},
 	//verifies hashes submitted by peers
 	verifyHashes: function () {
 		var params =  Router.current().params;	
@@ -309,17 +371,21 @@ Template.manageRoom.helpers({
 		var allHashesValid = true;
 		
 		var hasVerified = Rooms.findOne({_id: roomID}).peopleArr[0].hasVerifiedPeers;
+		var hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[0].hashesGathered;
 		
-		if (Rooms.findOne().readyToVerify && !hasVerified) {
+		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
 			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
 			var length = peopleArr.length;
 			var verifyArr = [];
+			var gatheredHashesString = localStorage.getItem("gatheredHashes");
+			var gatheredHashes = gatheredHashesString.split(',');
 		
 			//searches the array and changes the apropriate person's info
 			for (i = 0; i < length; i++) {
 				var submittedBit = peopleArr[i].submittedBit;
 				var randomBits = peopleArr[i].randomBits;
-				var hashedBits = peopleArr[i].hashedBits;
+				
+				var hashedBits = gatheredHashes[i];
 				
 				var clientHash = CryptoJS.SHA256(submittedBit.toString() + randomBits.toString()).toString();
 								
@@ -333,6 +399,7 @@ Template.manageRoom.helpers({
 			}
 			ReactiveMethod.call("adminVerify", params.adminKey.toString(), verifyArr, allHashesValid)
 		}
+		localStorage.clear();
 	},
 	//displays or doesn't display the submission option
 	showSubmit:function(){
@@ -370,11 +437,12 @@ Template.manageRoom.events({
 				//if it is an integer 
 				if (isInt(submittedBit)){
 					//if it is within the given range
-					if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 1){
+					if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 0){
 						var randomBits = stringGen(8);
-						var submittedBit = submittedBit - 1;
 						var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
-						Meteor.call("submitAdminHash", adminKey.toString(), randomBits, submittedBit, hashedBits);
+						localStorage.setItem("submittedBit", submittedBit);
+						localStorage.setItem("randomBits", randomBits);
+						Meteor.call("submitAdminHash", adminKey.toString(), hashedBits);
 						location.reload();
 						Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
 					}	

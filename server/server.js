@@ -23,6 +23,7 @@ Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
 			"peopleArr.hasSubmitted": 1, 
 			"peopleArr.randomBits": 1, 
 			"peopleArr.submittedBit": 1, 
+			"peopleArr.hashesGathered": 1,
 			"peopleArr.hashedBits": 1,
 			"peopleArr.peerVerifications": 1,
 			"peopleArr.hasVerifiedPeers": 1
@@ -60,6 +61,7 @@ Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
 			"peopleArr.randomBits": 1, 
 			"peopleArr.submittedBit": 1, 
 			"peopleArr.hashedBits": 1,
+			"peopleArr.hashesGathered": 1,
 			"peopleArr.peerVerifications": 1,
 			"peopleArr.hasVerifiedPeers": 1
 	    }});
@@ -115,6 +117,7 @@ Meteor.methods({
 				submittedBit: null, 
 				randomBits:  null, 
 				hasVerifiedPeers: false,
+				hashesGathered: false,
 				peerVerifications: peerVerified,
 				hashedBits: "Waiting for all submissions to be made"
 			}]
@@ -169,7 +172,7 @@ Meteor.methods({
 	    return Rooms.findOne({_id: roomID}).optionsCount;
 	},
 	//updates the submitted hash by a user 
-	submitHash:function (roomID, personID, randomBits, submittedBit, hashedBits) {	
+	submitHash:function (roomID, personID, hashedBits) {	
 		//gets the person arry and its lenght
 		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 		var length = newPeopleArr.length;
@@ -181,8 +184,6 @@ Meteor.methods({
 					break;
 				}
 				else {
-					newPeopleArr[i].randomBits = randomBits;
-					newPeopleArr[i].submittedBit = submittedBit;
 					newPeopleArr[i].hasSubmitted = true;
 					newPeopleArr[i].hashedBits = hashedBits;
 					break;
@@ -214,6 +215,26 @@ Meteor.methods({
 			{ "_id" : roomID },
 			{ $set: { "allSubmitted" : allSubmitted} }
 		);
+	},
+	//submits user's bits
+	submitUserBits:function (roomID, randomBits, submittedBit, personID) {	
+		//gets the person arry and its lenght
+		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var length = newPeopleArr.length;
+
+		for (i = 0; i <length; i++) {
+			if (newPeopleArr[i].personID == personID) {
+				newPeopleArr[i].randomBits = randomBits;
+				newPeopleArr[i].submittedBit = submittedBit;
+				newPeopleArr[i].hashesGathered = true;
+			}
+			//updates the room
+			Rooms.update(
+				{ "_id" : roomID },
+				{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
+			);
+			console.log("test");
+		}
 	},
 	//checks if the user has submitted their choice
 	hasSubmitted:function (roomID, personID) {	
@@ -352,19 +373,12 @@ Meteor.methods({
 	    
 	},	
 	//submits the admin's hash and closes room
-	submitAdminHash:function (adminKey, randomBits, submittedBit, hashedBits) {	
+	submitAdminHash:function (adminKey, hashedBits) {	
 		//gets the person arry and its lenght
 		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission
-		if (newPeopleArr[0].hasSubmitted == true){
-			//do nothing, it is a double submit
-		}
-		else {
-			newPeopleArr[0].randomBits = randomBits;
-			newPeopleArr[0].submittedBit = submittedBit;
-			newPeopleArr[0].hasSubmitted = true;
-			newPeopleArr[0].hashedBits = hashedBits;
-		}
+		newPeopleArr[0].hasSubmitted = true;
+		newPeopleArr[0].hashedBits = hashedBits;
 		//updates the room
 		Rooms.update(
 			{ "adminKey" : adminKey },
@@ -372,6 +386,20 @@ Meteor.methods({
 		);
 		
 		
+	},	
+	//submits the admin's hash and closes room
+	submitAdminBits:function (adminKey, randomBits, submittedBit) {	
+		//gets the person arry and its lenght
+		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		//protection against double submission
+		newPeopleArr[0].randomBits = randomBits;
+		newPeopleArr[0].submittedBit = submittedBit;
+		newPeopleArr[0].hashesGathered = true;
+		//updates the room
+		Rooms.update(
+			{ "adminKey" : adminKey },
+			{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
+		);
 	},	
 	//checks if the user has submitted their choice
 	hasAdminSubmitted:function (adminKey) {	
@@ -408,6 +436,7 @@ Meteor.methods({
 					hasSubmitted: false,
 				    hasVerifiedPeers: false,
 					submittedBit: null, 
+					hashesGathered: false,
 					randomBits: null, 
 					peerVerifications: peerVerified,
 					hashedBits: "Waiting for submission"
