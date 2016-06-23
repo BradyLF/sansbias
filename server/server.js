@@ -233,7 +233,6 @@ Meteor.methods({
 				{ "_id" : roomID },
 				{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
 			);
-			console.log("test");
 		}
 	},
 	//checks if the user has submitted their choice
@@ -388,7 +387,8 @@ Meteor.methods({
 		
 	},	
 	//submits the admin's hash and closes room
-	submitAdminBits:function (adminKey, randomBits, submittedBit) {	
+	submitAdminBits:function (adminKey, randomBits, submittedBit) {
+		console.log(randomBits);	
 		//gets the person arry and its lenght
 		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission

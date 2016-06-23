@@ -155,9 +155,16 @@ Template.displayRoom.helpers({
 		var personID = params.personID;	
 		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 		var length = peopleArr.length;
-		var hashesGathered = false;
+		var hashesGathered;
+		
+		for (i = 0; i < length; i++) {
+			if (peopleArr[i].personID == personID){
+				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered;
+				alert(hashesGathered);
+			}
+		}
 				
-		if (Rooms.findOne().readyToVerify) {
+		if (Rooms.findOne().readyToVerify && !hashesGathered) {
 			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
 			var length = peopleArr.length;
 			var gatheredHashes = [];
@@ -182,7 +189,7 @@ Template.displayRoom.helpers({
 		var roomID = params._id;
 		var personID = params.personID;	
 		var name = Session.get('personName');
-		var hasVerified = false;
+		var hasVerified;
 		var hashesGathered = false;
 		var getPeopleArr = Rooms.findOne({}).peopleArr;
 		var getLength = getPeopleArr.length;
@@ -191,13 +198,13 @@ Template.displayRoom.helpers({
 		for (i = 0; i <getLength; i++) {
 			if (getPeopleArr[i].name == name){
 				hasVerified = Rooms.findOne({_id: roomID}).peopleArr[i].hasVerifiedPeers;
+				console.log(hasVerified + "test");
 				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered
 			}
 		}	
 		
 	
 		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
-			location.reload();
 			console.log("verifying...");
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
@@ -221,7 +228,6 @@ Template.displayRoom.helpers({
 				}
 			}
 			ReactiveMethod.call("userVerify", roomID, name, personID, verifyArr, allHashesValid)
-			localStorage.clear();
 		}
 	},
 	//displays or doesn't display the submission option
@@ -355,6 +361,7 @@ Template.manageRoom.helpers({
 			localStorage.setItem("gatheredHashes", gatheredHashes);
 			var randomBits = localStorage.getItem("randomBits");
 			var submittedBit = localStorage.getItem("submittedBit");
+			alert(randomBits);
 
 			if (hashesGathered){
 				console.log("test");
@@ -399,7 +406,6 @@ Template.manageRoom.helpers({
 			}
 			ReactiveMethod.call("adminVerify", params.adminKey.toString(), verifyArr, allHashesValid)
 		}
-		localStorage.clear();
 	},
 	//displays or doesn't display the submission option
 	showSubmit:function(){
