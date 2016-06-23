@@ -291,7 +291,6 @@ Meteor.methods({
 			var finalSum = 0;
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + peopleArr[i].submittedBit;
-				console.log(finalSum);
 			}
 			//mod it by the options count
 			finalSum = finalSum % Rooms.findOne({_id: roomID}).optionsCount;
@@ -360,7 +359,6 @@ Meteor.methods({
 			
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + peopleArr[i].submittedBit;
-				console.log(finalSum);
 			}
 			finalSum = finalSum % Rooms.findOne({adminKey: adminKey}).optionsCount;
 			Rooms.update(
@@ -388,7 +386,6 @@ Meteor.methods({
 	},	
 	//submits the admin's hash and closes room
 	submitAdminBits:function (adminKey, randomBits, submittedBit) {
-		console.log(randomBits);	
 		//gets the person arry and its lenght
 		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission

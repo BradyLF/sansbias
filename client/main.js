@@ -79,7 +79,7 @@ Template.addRoom.events({
 		//get the roomAdmin
 		var getRoomAdmin = $('.room-admin').val();
 		//get the number of options
-		var optionsCount = $('.options-count').val() - 1;
+		var optionsCount = $('.options-count').val();
 		//generate the admin key, create the room, and redirect to new room
 		var adminKey = "";
 		Meteor.call("stringGen", 14, function(error, result){
@@ -160,7 +160,6 @@ Template.displayRoom.helpers({
 		for (i = 0; i < length; i++) {
 			if (peopleArr[i].personID == personID){
 				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered;
-				alert(hashesGathered);
 			}
 		}
 				
@@ -198,14 +197,12 @@ Template.displayRoom.helpers({
 		for (i = 0; i <getLength; i++) {
 			if (getPeopleArr[i].name == name){
 				hasVerified = Rooms.findOne({_id: roomID}).peopleArr[i].hasVerifiedPeers;
-				console.log(hasVerified + "test");
 				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered
 			}
 		}	
 		
 	
 		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
-			console.log("verifying...");
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
 			var allHashesValid = true;
@@ -361,10 +358,8 @@ Template.manageRoom.helpers({
 			localStorage.setItem("gatheredHashes", gatheredHashes);
 			var randomBits = localStorage.getItem("randomBits");
 			var submittedBit = localStorage.getItem("submittedBit");
-			alert(randomBits);
 
 			if (hashesGathered){
-				console.log("test");
 				Meteor.call("submitAdminBits", adminKey.toString(), randomBits, submittedBit);
 			}
 		}
@@ -380,6 +375,7 @@ Template.manageRoom.helpers({
 		var hasVerified = Rooms.findOne({_id: roomID}).peopleArr[0].hasVerifiedPeers;
 		var hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[0].hashesGathered;
 		
+		//makes sure you're ready to verify, you haven't already verified, and you have gathered the hashes
 		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
 			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
 			var length = peopleArr.length;
@@ -391,7 +387,6 @@ Template.manageRoom.helpers({
 			for (i = 0; i < length; i++) {
 				var submittedBit = peopleArr[i].submittedBit;
 				var randomBits = peopleArr[i].randomBits;
-				
 				var hashedBits = gatheredHashes[i];
 				
 				var clientHash = CryptoJS.SHA256(submittedBit.toString() + randomBits.toString()).toString();
