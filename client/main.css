@@ -189,7 +189,7 @@ table {
 	border: 5px solid #d4d4d4;
 	border-color: #d4d4d4;
 	width: 100%;
-	box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.01);
+	box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.08);
 }
 
 
@@ -216,6 +216,10 @@ td {
 	background-color: #d4d4d4 !important;
 	color: #4b4a4a !important;
 	font-size: medium;
+}
+
+.roomInfo {
+	margin-bottom: 100px;
 }
 
 
