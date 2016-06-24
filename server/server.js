@@ -294,10 +294,7 @@ Meteor.methods({
 			var finalSum = 0;
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + parseInt(peopleArr[i].submittedBit);
-				console.log(peopleArr[i].submittedBit);
 			}
-			console.log(finalSum);
-			console.log(Rooms.findOne({_id: roomID}).optionsCount);
 			//mod it by the options count
 			finalSum = finalSum % Rooms.findOne({_id: roomID}).optionsCount;
 			//update the sum
@@ -366,7 +363,6 @@ Meteor.methods({
 			var finalSum = 0;
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + parseInt(peopleArr[i].submittedBit);
-				console.log(peopleArr[i].submittedBit);
 			}
 			finalSum = finalSum % Rooms.findOne({adminKey: adminKey}).optionsCount;
 			Rooms.update(
