@@ -148,8 +148,9 @@ Template.displayRoom.helpers({
 		var params =  Router.current().params;			
 		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
 	},
-		//displays the calculated final Sum
+	//gathers the hashes from the peopleArr before submitting the bits
 	gatherHashes: function () {
+		//all the variables!
 		var params =  Router.current().params;	
 		var roomID = params._id;
 		var personID = params.personID;	
@@ -157,12 +158,14 @@ Template.displayRoom.helpers({
 		var length = peopleArr.length;
 		var hashesGathered;
 		
+		//set hashes gathered to it's existing state
 		for (i = 0; i < length; i++) {
 			if (peopleArr[i].personID == personID){
 				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered;
 			}
 		}
-				
+		
+		//if the room is ready to verify and hashes have yet to be gathered	
 		if (Rooms.findOne().readyToVerify && !hashesGathered) {
 			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
 			var length = peopleArr.length;
@@ -172,21 +175,22 @@ Template.displayRoom.helpers({
 			for (i = 0; i < length; i++) {
 				gatheredHashes.push(peopleArr[i].hashedBits);
 			}
+			//locall store the hashes, and retrive the bit and random bits
 			localStorage.setItem("gatheredHashes", gatheredHashes);
 			var randomBits = localStorage.getItem("randomBits");
 			var submittedBit = localStorage.getItem("submittedBit");
 			hashesGathered = true;
-			
+			//submit the user's bits
 			if (hashesGathered){
 				Meteor.call("submitUserBits", roomID.toString(), randomBits, submittedBit, personID);
 			}
 		}
 	},
+	//check if the admin has submitted, and if so reload to begin verifcation
 	hasAdminSubmitted: function() {
 		var params =  Router.current().params;	
 		var roomID = params._id;
-		if (Rooms.findOne({_id: roomID}).adminSubmitted && Rooms.findOne({_id: roomID}).finalSum == 
-"to be determined") {
+		if (Rooms.findOne({_id: roomID}).adminSubmitted && Rooms.findOne({_id: roomID}).finalSum == "to be determined") {
 			location.reload();
 		}
 	},
@@ -202,29 +206,31 @@ Template.displayRoom.helpers({
 		var getLength = getPeopleArr.length;
 		var verifyArr = [];
 		
-		for (i = 0; i <getLength; i++) {
+		//gets this users status on hashes gathered and verification
+		for (i = 0; i < getLength; i++) {
 			if (getPeopleArr[i].name == name){
 				hasVerified = Rooms.findOne({_id: roomID}).peopleArr[i].hasVerifiedPeers;
 				hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[i].hashesGathered
 			}
 		}	
-		
-	
+		//if room is ready to verify, this user has yet to verify, and this user has the hashes
 		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
-
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
 			var allHashesValid = true;
+			var gatheredHashesString = localStorage.getItem("gatheredHashes");
+			var gatheredHashes = gatheredHashesString.split(',');
 			
 			
-			//searches the array and changes the apropriate person's info
+			//searches and begins verifying
 			for (i = 0; i <length; i++) {
 				var submittedBit = peopleArr[i].submittedBit;
 				var randomBits = peopleArr[i].randomBits;
-				var hashedBits = peopleArr[i].hashedBits;
-				
+				var hashedBits = gatheredHashes[i];
+				//hashes the bits
 				var clientHash = CryptoJS.SHA256(submittedBit.toString() + randomBits.toString()).toString();
 				
+				//pushes the subsequent verification to the array index corresponding to the user
 				if (clientHash == hashedBits){
 					verifyArr.push(name + " has verified");
 				}

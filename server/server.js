@@ -109,6 +109,7 @@ Meteor.methods({
 	insert:function (roomAdmin, roomSize, adminKey, optionsCount) {
 		//create a new entry into the array with the admin's info
 		
+		//peopleArr with varaibles each user will have
 		peerVerified = [];
 		var peopleArr = [{
 				name: roomAdmin, 
@@ -173,7 +174,7 @@ Meteor.methods({
 	},
 	//updates the submitted hash by a user 
 	submitHash:function (roomID, personID, hashedBits) {	
-		//gets the person arry and its lenght
+		//gets the person arry and its length
 		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 		var length = newPeopleArr.length;
 		//searches the array and changes the apropriate person's info
@@ -183,6 +184,7 @@ Meteor.methods({
 				if (newPeopleArr[i].hasSubmitted == true){
 					break;
 				}
+				//change their submission status to true and submit their hashedbits
 				else {
 					newPeopleArr[i].hasSubmitted = true;
 					newPeopleArr[i].hashedBits = hashedBits;
@@ -190,17 +192,17 @@ Meteor.methods({
 				}
 			}
 		}
-		//updates the room
+		//updates the room with the users hashed bits
 		Rooms.update(
 			{ "_id" : roomID },
 			{ $set: { "peopleArr" : newPeopleArr} }
 		);
-		//gets the new person arry and its lenght
+		//gets the newly updated person array and its length
 		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
 		var length = peopleArr.length;
 		//check if all the people have submitted an option
 		var allSubmitted = true;
-		//searches the array and changes the apropriate person's info
+		//searches the array to see if this person is the last submitter
 		for (i = 1; i <length; i++) {
 			if (peopleArr[i].hasSubmitted){
 				allSubmitted = true;
@@ -243,7 +245,7 @@ Meteor.methods({
 		//searches the array and changes the apropriate person's info
 		for (i = 0; i <length; i++) {
 			if (peopleArr[i].personID == personID) {
-				//protection against double submission
+				//checks if they have submitted
 				if (peopleArr[i].hasSubmitted == true){
 					return true;
 				}
@@ -253,7 +255,7 @@ Meteor.methods({
 			}
 		}
 	},
-	//performs the user's verification
+	//performs the user's verification of its peers
 	userVerify:function (roomID, name, personID, verifyArr, allHashesValid) {
 		//gets the people array from the collection
 	    var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
@@ -272,7 +274,7 @@ Meteor.methods({
 				}
 			}		    
 	   	}
-	   	//update the room with the verification
+	   	//update the room with the verification or lackthereof
 	   	Rooms.update(
 			{ "_id" : roomID },
 			{ $set: { "peopleArr" : peopleArr} }
@@ -288,6 +290,7 @@ Meteor.methods({
 		}
 		//if all the peers have verified, calculate the final sum
 		if (allVerified) {
+			//iterate through the submitted bits
 			var finalSum = 0;
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + peopleArr[i].submittedBit;
@@ -298,10 +301,8 @@ Meteor.methods({
 			Rooms.update(
 				{ "_id" : roomID },
 				{ $set: { "finalSum" : finalSum} }
-			);
-			
+			);	
 		}
-		
 	},	
 
 
@@ -330,39 +331,42 @@ Meteor.methods({
 	adminVerify:function (adminKey, verifyArr, allHashesValid) {
 	    var peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 	    var length = peopleArr.length;
-	    
+	    //push the admins verifications to the corresponding peers
 	    for (i = 0; i <length; i++) {
 		     peopleArr[i].peerVerifications.push(verifyArr[i]);
 	    }
+	    //mark the peers as verified
 	    if (allHashesValid) {
 	  		peopleArr[0].hasVerifiedPeers = true;
 	  	}
-	    
+	    //update the people arr
 	    Rooms.update(
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : peopleArr} }
 		);
 		
-		var allVerified = true;
-		
+		//get the newly updated people array
 		peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
 		length = peopleArr.length;
+		var allVerified = true;
 		
+		//check if everyone has been peer verified 
+		//(This will never be the case, as admin peer verifies first)
 		for (i = 0; i <length; i++) {
 			if (peopleArr[i].hasVerifiedPeers == false){
 				allVerified = false;
 			}
 		}
-		
+		//if everyone has peer verified, 
+		//calculate the final sum and update the sum
 		if (allVerified) {
 			var finalSum = 0;
-			
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + peopleArr[i].submittedBit;
 			}
 			finalSum = finalSum % Rooms.findOne({adminKey: adminKey}).optionsCount;
 			Rooms.update(
-				{ "_id" : roomID },
+				{ "adminKey" : adminKey },
 				{ $set: { "finalSum" : finalSum} }
 			);
 			
