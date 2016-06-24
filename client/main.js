@@ -79,7 +79,7 @@ Template.addRoom.events({
 		//get the roomAdmin
 		var getRoomAdmin = $('.room-admin').val();
 		//get the number of options
-		var optionsCount = $('.options-count').val();
+		var optionsCount = $('.options-count').val() - 1;
 		//generate the admin key, create the room, and redirect to new room
 		var adminKey = "";
 		Meteor.call("stringGen", 14, function(error, result){
@@ -182,6 +182,14 @@ Template.displayRoom.helpers({
 			}
 		}
 	},
+	hasAdminSubmitted: function() {
+		var params =  Router.current().params;	
+		var roomID = params._id;
+		if (Rooms.findOne({_id: roomID}).adminSubmitted && Rooms.findOne({_id: roomID}).finalSum == 
+"to be determined") {
+			location.reload();
+		}
+	},
 	//verifies hashes submitted by peers
 	verifyHashes: function () {
 		var params =  Router.current().params;	
@@ -203,6 +211,7 @@ Template.displayRoom.helpers({
 		
 	
 		if (Rooms.findOne().readyToVerify && !hasVerified && hashesGathered) {
+
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
 			var allHashesValid = true;
@@ -224,7 +233,7 @@ Template.displayRoom.helpers({
 					allHashesValid = false;
 				}
 			}
-			ReactiveMethod.call("userVerify", roomID, name, personID, verifyArr, allHashesValid)
+			ReactiveMethod.call("userVerify", roomID, name, personID, verifyArr, allHashesValid);
 		}
 	},
 	//displays or doesn't display the submission option
