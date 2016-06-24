@@ -369,9 +369,7 @@ Meteor.methods({
 				{ "adminKey" : adminKey },
 				{ $set: { "finalSum" : finalSum} }
 			);
-			
 		}
-	    
 	},	
 	//submits the admin's hash and closes room
 	submitAdminHash:function (adminKey, hashedBits) {	
@@ -385,8 +383,6 @@ Meteor.methods({
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true, "readyToVerify": true, "isOpen": false} }
 		);
-		
-		
 	},	
 	//submits the admin's hash and closes room
 	submitAdminBits:function (adminKey, randomBits, submittedBit) {

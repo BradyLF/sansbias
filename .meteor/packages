@@ -21,3 +21,4 @@ iron:router
 session
 simple:reactive-method
 jparker:crypto-sha256
+force-ssl

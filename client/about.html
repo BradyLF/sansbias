@@ -2,10 +2,48 @@
 <template name="about">
 	<div class="animated fadeIn content">
 		<div class="main-title">
-			<h1 class="title">about</h1>
+			<h1 class="title">how it works</h1>
 			<img class="logo">
 		</div>
 		<hr class="animated zoomIn">
-		<p class="about-text">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum molestie nec eros et semper. Aenean sed mauris dignissim, condimentum eros sit amet, fringilla nisi. Etiam viverra diam ut purus suscipit sollicitudin. Integer efficitur felis sit amet erat semper fermentum. Sed laoreet, tellus in aliquam dignissim, libero augue tincidunt magna, nec gravida nisl risus at est. Integer et laoreet libero. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec porttitor eu tortor quis iaculis. Aliquam et placerat orci. Morbi aliquam nisi a nibh interdum, et mattis odio lobortis. Duis vel tortor eget nibh mollis tincidunt ut id neque. Phasellus gravida dui libero, vitae dapibus libero pellentesque eu. Vivamus sit amet porta lacus, id interdum purus. Donec porta lobortis pulvinar. Cras ex tellus, ornare eget pretium ac, molestie eu tellus.</p>
+		
+		
+		<div class="flex-container">
+			<div class="flex-item">
+				<h4>1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A room is created, where the room administrator selects the number of options each room member will have.</h4>
+			</div>
+			<div class="flex-item">
+				<h4>2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The room administrator distributes a shareable link, and those with that link join the room.</h4>
+			</div>
+		</div>
+		
+		
+		<div class="flex-container">
+			<div class="flex-item">
+				<h4>3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All room members submit their integer choice. This choice is then hashed with random bits, and only the hash is submitted to the server. The submitted bit and random bits are stored locally for later.</h4>
+			</div>
+			<div class="flex-item">
+				<h4>4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Once all bits have been submitted, the room administrator submits their bit and closes the room.</h4>
+			</div>
+		</div>
+		
+		<div class="flex-container">
+			<div class="flex-item">
+				<h4>5)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each room member gathers all the hashes from the server and stores them locally, before sending their submitted bit and random bits to the server for peer verification.</h4>
+			</div>
+			<div class="flex-item">
+				<h4>6)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each member pulls the submitted and random bits of all other room members from the server, and individually combines and hashes them. This hash is then compared to the hash taken from the server earlier, in order to verify its validity.</h4>
+			</div>
+		</div>
+		
+		
+		<div class="flex-container">
+			<div class="flex-item">
+				<h4>7)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Provided all hashes pass verification, the final verified sum is calculated by adding all the submitted bits together and modding this sum by the number of options each room member had initially.</h4>
+			</div>
+			<div class="flex-item">
+				<h4>8)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The final verified sum is displayed to all room members.</h4>
+			</div>
+		</div>
 	</div>
 </template>
