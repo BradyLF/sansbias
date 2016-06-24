@@ -12,14 +12,18 @@ Rooms = new Meteor.Collection('rooms');
 
 //route for static index
 Router.route('/', function () {
+    document.title = 'sansbias | secure group decision making';
 	this.render('index');
 });
 //route for addRoom template
 Router.route('/addRoom', function () {
+    document.title = 'Create A Room | sansbias';
 	this.render('addRoom');
+	
 });
 //route for join template
 Router.route('/joinRoom', function () {
+	document.title = 'Join A Room | sansbias';
 	this.render('joinRoom');
 });
 //route for join with roomID parameter
@@ -28,13 +32,15 @@ Router.route('/joinRoom/:_id', function () {
 });
 //route for static about template 
 Router.route('/about', function () {
-  this.render('about');
+	document.title = 'How It Works | sansbias';
+	this.render('about');
 });
 //route for displayRoom template 
 Router.route('/room/:_id/:personID', function () {
 	var params = this.params;
 	var roomID = params._id;
 	var personID = params.personID;
+	document.title = 'View Your Room | sansbias';
     //subscribe to public room info
     Meteor.subscribe("publicRoomInfoByRoomID", roomID.toString());
 	//display submission option if they haven't submitted already
@@ -53,6 +59,7 @@ Router.route('/manageRoom/:adminKey', function () {
 	var adminKey = params.adminKey;
 	Meteor.subscribe("publicRoomInfoByAdminKey", adminKey.toString());
 	//display submission option if they haven't submitted already
+	document.title = 'Manage Your Room | sansbias';
 	Meteor.call('hasAdminSubmitted', adminKey, function (err, hasSubmitted) {
         if (hasSubmitted) {
             Session.set('showSubmit',false);
