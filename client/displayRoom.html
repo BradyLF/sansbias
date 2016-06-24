@@ -35,8 +35,11 @@
 					<td>Your Personal Identifier:</td>
 					<td class="link">{{personID}}</td>
   				</tr>
-			</table><br><br><br>
+			</table>
+			<br><br><br> <!--This is gross, I know-->
 		</div>
+		<!--These are essentially reactive method calls to get current information. 
+			They don't display anything, but instead trigger other things to be displayed or altered-->
 		    {{hasAdminSubmitted}}
 		    {{gatherHashes}}
 			{{verifyHashes}}

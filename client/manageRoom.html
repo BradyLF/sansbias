@@ -39,7 +39,10 @@
 					<td>Public Invite Link:</td>
 					<td class="link"><a target="_blank" href="{{joinLink}}">Click Here To Open Link</a></td>
   				</tr>
-			</table><br><br><br>
+			</table>
+			<br><br><br><!--This is gross, I know-->
+			<!--These are essentially reactive method calls to get current information. 
+			They don't display anything, but instead trigger other things to be displayed or altered-->
 			{{gatherHashes}}
 			{{verifyHashes}}
 	</div>

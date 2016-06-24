@@ -79,7 +79,7 @@ Template.addRoom.events({
 		//get the roomAdmin
 		var getRoomAdmin = $('.room-admin').val();
 		//get the number of options
-		var optionsCount = $('.options-count').val() - 1;
+		var optionsCount = $('.options-count').val();
 		//generate the admin key, create the room, and redirect to new room
 		var adminKey = "";
 		Meteor.call("stringGen", 14, function(error, result){
@@ -146,7 +146,7 @@ Template.displayRoom.helpers({
 	//displays the options count from method call
 	optionsCount: function () {
 		var params =  Router.current().params;			
-		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString());
+		return ReactiveMethod.call("getOptionsCountByRoomID", params._id.toString()) - 1;
 	},
 	//gathers the hashes from the peopleArr before submitting the bits
 	gatherHashes: function () {
@@ -218,9 +218,9 @@ Template.displayRoom.helpers({
 			var peopleArr = Rooms.findOne({}).peopleArr;
 			var length = peopleArr.length;
 			var allHashesValid = true;
+			//gets hashes from local storage
 			var gatheredHashesString = localStorage.getItem("gatheredHashes");
 			var gatheredHashes = gatheredHashesString.split(',');
-			
 			
 			//searches and begins verifying
 			for (i = 0; i <length; i++) {
@@ -278,7 +278,7 @@ Template.displayRoom.events({
 			//if it is an integer 
 			if (isInt(submittedBit)){
 				//if it is within the given range
-				if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 0){
+				if(submittedBit <= parseInt(Rooms.findOne().optionsCount - 1) && submittedBit >= 0){
 					var randomBits = stringGen(8);
 					localStorage.setItem("submittedBit", submittedBit);
 					localStorage.setItem("randomBits", randomBits);
@@ -346,7 +346,7 @@ Template.manageRoom.helpers({
 	//displays the options count from method call
 	optionsCount: function () {
 		var params =  Router.current().params;			
-		return ReactiveMethod.call("getOptionsCountByAdminKey", params.adminKey.toString());
+		return ReactiveMethod.call("getOptionsCountByAdminKey", params.adminKey.toString()) - 1;
 	},
 	//displays the calculated final Sum
 	finalSum: function () {
@@ -357,9 +357,9 @@ Template.manageRoom.helpers({
 		var params =  Router.current().params;	
 		var adminKey = params.adminKey;	
 		var roomID = ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());
-		
 		var hashesGathered = false
 		
+		//if it is verifcation time!
 		if (Rooms.findOne().readyToVerify) {
 			var peopleArr = Rooms.findOne({_id : roomID}).peopleArr;
 			var length = peopleArr.length;
@@ -369,6 +369,7 @@ Template.manageRoom.helpers({
 			for (i = 0; i < length; i++) {
 				gatheredHashes.push(peopleArr[i].hashedBits);
 			}
+			//store that stuff locally!
 			hashesGathered = true;
 			localStorage.setItem("gatheredHashes", gatheredHashes);
 			var randomBits = localStorage.getItem("randomBits");
@@ -381,12 +382,13 @@ Template.manageRoom.helpers({
 	},
 	//verifies hashes submitted by peers
 	verifyHashes: function () {
+		//all the variables
 		var params =  Router.current().params;	
 		var adminKey = params.adminKey;		
 		var roomID = ReactiveMethod.call("getRoomIDByAdminKey", params.adminKey.toString());
 		var name = ReactiveMethod.call("getRoomAdminByAdminKey", params.adminKey.toString());
 		var allHashesValid = true;
-		
+		//can just the the 0th because it's the admin
 		var hasVerified = Rooms.findOne({_id: roomID}).peopleArr[0].hasVerifiedPeers;
 		var hashesGathered = Rooms.findOne({_id: roomID}).peopleArr[0].hashesGathered;
 		
@@ -453,7 +455,7 @@ Template.manageRoom.events({
 				//if it is an integer 
 				if (isInt(submittedBit)){
 					//if it is within the given range
-					if(submittedBit <= parseInt(Rooms.findOne().optionsCount) && submittedBit >= 0){
+					if(submittedBit <= parseInt(Rooms.findOne().optionsCount - 1) && submittedBit >= 0){
 						var randomBits = stringGen(8);
 						var hashedBits = CryptoJS.SHA256(submittedBit.toString() + randomBits).toString();
 						localStorage.setItem("submittedBit", submittedBit);
@@ -484,7 +486,8 @@ Template.manageRoom.events({
 ///////////////////////////////////////////////////////////////////////////////////////////
 //events and helpers for the joinRoom template                                           //
 ///////////////////////////////////////////////////////////////////////////////////////////
-    
+
+//gets the ID from the parameters
 Template.joinRoom.helpers({
     getId: function () {
 		var params =  Router.current().params;
