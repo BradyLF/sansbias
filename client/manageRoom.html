@@ -28,16 +28,20 @@
 			<h3>Room Information:</h3>
 			<table class="roomInfo">
 				<tr>
+					<th>Description</th>
+					<th>Data</th>
+				</tr>
+				<tr>
 					<td>Room Administrator:</td>
-					<td class="link">{{adminName}}</td>
+					<td>{{adminName}}</td>
   				</tr>
   				<tr>
 					<td>Private Admin Key:</td>
-					<td class="link"><a target="_blank" href="{{adminKey}}">{{adminKey}}</a></td>
+					<td><a target="_blank" href="{{adminKey}}">{{adminKey}}</a></td>
   				</tr>
   				<tr>
 					<td>Public Invite Link:</td>
-					<td class="link"><a target="_blank" href="{{joinLink}}">Click Here To Open Link</a></td>
+					<td><a target="_blank" href="{{joinLink}}">Click Here To Open Link</a></td>
   				</tr>
 			</table>
 			<!--These are essentially reactive method calls to get current information. 
