@@ -4,6 +4,7 @@
 		<h1 class="title">Welcome {{personName}}</h1>
 		<hr style="width: 80%;" class="animated zoomIn">
 		<div id="roomInfo">
+			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
 			{{#if showSubmit}}
 				<h3>Enter an integer 0 through {{optionsCount}}:</h3>
 				<input placeholder="e.g. 0" class="selectedOption" type="number" value="">
@@ -42,9 +43,9 @@
 		</div>
 		<!--These are essentially reactive method calls to get current information. 
 			They don't display anything, but instead trigger other things to be displayed or altered-->
-		    {{hasAdminSubmitted}}
 		    {{gatherHashes}}
 			{{verifyHashes}}
+		    {{hasAdminSubmitted}}
 	</div>
 	
 	<script>

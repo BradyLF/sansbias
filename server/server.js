@@ -151,7 +151,7 @@ Meteor.methods({
 ///////////////////////////////////////////////////////////////////////////////////////////
     
     //gets an roomID with a roomID. This code is redudant but it present for consistency's sake
-    getRoomIDByByRoomID:function (roomID) {
+    getRoomIDByRoomID:function (roomID) {
 	    return Rooms.findOne({_id: roomID})._id.toString();
 	},
 	//gets the room admin with the roomID
