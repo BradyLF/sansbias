@@ -2,46 +2,41 @@
 <template name="manageRoom">
 	<div class="animated fadeIn content">
 		<h1 class="title">Welcome {{adminName}}</h1>
+		<p class="room-subtitle">you are the room administrator</p>
 			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
 			{{#if showSubmit}}
 				<h3>Enter an integer 0 through {{optionsCount}}:</h3>
 				<input placeholder="e.g. 0" class="selectedOption" type="number" value="">
 				<button class="submit flat-button" type="submit" value="submit">Close Room & Submit Choice</button>
 			{{else}}
-				<h3>You have submitted your choice</h3>
-				<h3>The verified calculated sum is {{finalSum}}</h3>
+				<h3 class="title" id="manage-title">The verified calculated sum is {{finalSum}}</h3>
 				<hr>
 			{{/if}}
 			<h3>Room Members ( {{roomSize}} Online )</h3>
-			<table>
-				<tr>
-					<th>Name</th>
-					<th>Hashed Submission</th>
-  				</tr>
+			<div class="room-info">
+				<div class="flex-container table-title">
+					<p class="flex-item name">Name</p>
+					<p class="flex-item original">Original Submission</p>
+					<p class="flex-item hash">Hashed Submission</p>
+  				</div>
   				{{#each roomData}}
-  				<tr>
-					<td class="name">{{name}}</td>
-					<td class="hash" title="{{hashedBits}}">{{hashedBits}}</td>
-  				</tr>
+  					<div class="flex-container">
+						<p class="flex-item name">{{name}}</p>
+						<p class="flex-item original">{{submittedBit}}</p>
+						<p class="flex-item hash" title="{{hashedBits}}">{{hashedBits}}</p>
+  					</div>
 				{{/each}}
-			</table>
+			</div>
+			<hr>
 			<h3>Room Information:</h3>
 			<table class="roomInfo">
 				<tr>
-					<th>Description</th>
-					<th>Data</th>
+					<th>Room Administrator</th>
+					<th>Public Invite Code</th>
 				</tr>
 				<tr>
-					<td>Room Administrator:</td>
 					<td>{{adminName}}</td>
-  				</tr>
-  				<tr>
-					<td>Public Invite Code:</td>
 					<td><a target="_blank" href="{{joinLink}}">{{roomCode}}</a></td>
-  				</tr>
-  				<tr>
-					<td>Private Admin Key:</td>
-					<td><a target="_blank" href="{{adminKey}}">{{adminKey}}</a></td>
   				</tr>
 			</table>
 			<!--These are essentially reactive method calls to get current information. 

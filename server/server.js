@@ -40,7 +40,8 @@ Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
 			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.hashedBits": 1
+			"peopleArr.hashedBits": 1,
+			"peopleArr.submittedBit": 1, 
 	    }});
 	}
 });
@@ -77,7 +78,8 @@ Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
 			finalSum: 1,
 		    "peopleArr.name": 1,
 			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.hashedBits": 1
+			"peopleArr.hashedBits": 1,
+			"peopleArr.submittedBit": 1, 
 	    }});
 	}
 });
@@ -115,7 +117,7 @@ Meteor.methods({
 				name: roomAdmin, 
 				personID: Meteor.call("stringGen", 10), 
 				hasSubmitted: false,
-				submittedBit: null, 
+				submittedBit: "Not Yet Public", 
 				randomBits:  null, 
 				hasVerifiedPeers: false,
 				hashesGathered: false,
@@ -432,7 +434,7 @@ Meteor.methods({
 					personID: personID, 
 					hasSubmitted: false,
 				    hasVerifiedPeers: false,
-					submittedBit: null, 
+					submittedBit: "Not Yet Public", 
 					hashesGathered: false,
 					randomBits: null, 
 					peerVerifications: peerVerified,

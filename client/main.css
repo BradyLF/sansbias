@@ -56,7 +56,7 @@ html, body {
 	color: #4b4a4a;
 }
 
-.flex-container {
+.flex-container-about {
     display: -webkit-flex;
     display: flex;
     margin-left: auto;
@@ -68,7 +68,7 @@ html, body {
 	box-shadow: 1px 5px 20px 1px rgba(96, 96, 96, 0.05 );
 }
 
-.flex-item {
+.flex-item-about {
     background-color: #f0f0f0;
     width: 77%;
     margin-right: 3%;
@@ -164,6 +164,13 @@ html, body {
 	font-weight: 600;
 }
 
+.room-subtitle {
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	font-size: medium;
+}
+
 #index {
 	width: 100%;
 	margin-left: 0;
@@ -186,20 +193,63 @@ html, body {
 
 hr {
 	width: 100%;
-	color: #4b4a4a;
-	border: 1px solid #4b4a4a;
-	
+	color: #fff;
+	border: 0.5px solid #d4d4d4;	
 }
 
 /*******************************************/
 /* Styling for Tables and the Data in them */
 /*******************************************/
 
+.room-info {
+	box-shadow: 1px 5px 20px 1px rgba(96, 96, 96, 0.08 );
+}
+
+.flex-container {
+    display: -webkit-flex;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+	width: 100%;
+    min-width: 884px ;
+    text-align: left;
+    border-bottom: 5px solid #d4d4d4;
+    border-left: 5px solid #d4d4d4;
+    border-right: 5px solid #d4d4d4;
+}
+
+.flex-item {
+	border-bottom: 1px solid black;
+    height: auto;
+    padding: 10px;
+    vertical-align: middle;
+    margin: 14px;
+}
+
+.table-title {
+	background-color: #d4d4d4 !important;
+	color: #4b4a4a !important;
+	font-weight: bold;
+}
+
+.name {
+    min-width: 150px ;
+}
+
+.hash {
+	width: calc(100% - 300px);
+    min-width: 500px;
+}
+
+.original {
+    min-width: 150px;
+}
+
 table {
 	border: 5px solid #d4d4d4;
 	border-color: #d4d4d4;
 	width: 100%;
-	box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.08);
+	box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.05);
 }
 
 
@@ -341,20 +391,67 @@ input {
 	text-align: center;
 }
 
+@media only screen and (max-width: 1100px) {
 
-@media only screen and (max-width: 800px) {
+
+	h3 {
+		font-size: large;
+	}
+	
+	.flex-container {
+    	min-width: 24px ;
+		display: block;
+		width: 100%;
+		border: 2px solid #d4d4d4;
+		margin-top: 14px;
+		border-radius: 2px;
+		box-shadow: 1px 5px 20px 1px rgba(96, 96, 96, 0.08 );
+	}
+	.flex-item {
+		width: 96%;
+	}
+	
+	.table-title {
+		background-color: #d4d4d4 !important;
+		color: #4b4a4a !important;
+		font-weight: bold;
+	}
+
+	.name {
+		width: auto !important;
+	}
+
+	.hash {
+		width: auto;
+		max-width: 100% !important;
+		word-wrap: break-word;
+		font-size: small;
+		min-width: 1px;
+		
+	}
+
+	.original {
+		width: auto !important;
+	}
+	
+	.room-info {
+		box-shadow: 1px 5px 20px 1px rgba(96, 96, 96, 0.00 );
+	}
+}
+
+@media only screen and (max-width: 850px) {
     
 
+	th {
+		max-width: 10vw !important;
+		word-wrap: break-word;
+		font-size: small;
+	}
+	
 	td {
 		max-width: 10vw !important;
 		word-wrap: break-word;
-		font-size: medium;
-		font-weight: 700;
-	}
-	.hash {
 		font-size: small;
-		font-weight: 500;
-
 	}
 	table {
 		table-layout: fixed;
@@ -375,14 +472,6 @@ input {
 	    margin-right: auto;
 	    width: 100%;
 	}
-	.flex-container {
-		display: block;
-		width: 100%;
-	}
-	.flex-item {
-		background-color: #f0f0f0;
-		width: 100%;
-	}
 	.large-flat-button {
 		display: block;
 	}
@@ -401,7 +490,6 @@ input {
 		margin-left: auto;
 		margin-right: auto;
 	}
-	
 	.flat-button {
 		margin-top: 10px;
 		width: 100%;

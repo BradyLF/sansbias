@@ -150,6 +150,10 @@ Template.displayRoom.helpers({
 		var params =  Router.current().params;			
    		return params.personID.toString();
 	},
+	//displays the room size from url parameter
+	personLink: function () {
+   		return window.location.href;
+	},
 	//displays the options count from method call
 	optionsCount: function () {
 		var params =  Router.current().params;			

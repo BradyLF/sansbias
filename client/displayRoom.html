@@ -2,41 +2,43 @@
 <template name="displayRoom">
 	<div class="animated fadeIn content">
 		<h1 class="title">Welcome {{personName}}</h1>
+		<hr style="width: 80%;" class="animated zoomIn">
 		<div id="roomInfo">
 			{{#if showSubmit}}
 				<h3>Enter an integer 0 through {{optionsCount}}:</h3>
 				<input placeholder="e.g. 0" class="selectedOption" type="number" value="">
 				<button class="submit flat-button" type="submit" value="submit">Submit Choice</button>
 			{{else}}
-				<h3>You have submitted your choice</h3>
-				<h3>The verified calculated sum is {{finalSum}}</h3>
+				<h3 class="title" id="manage-title">The verified calculated sum is {{finalSum}}</h3>
+				<p class="room-subtitle">The page may refresh numerous times during calculation</p>
 				<hr>
 			{{/if}}
 			<h3>Room Members ( {{roomSize}} Online )</h3>
-			<table>
-				<tr>
-					<th>Name </th>
-					<th>Hashed Submission</th>
-  				</tr>
+			<div class="room-info">
+				<div class="flex-container table-title">
+					<p class="flex-item name">Name</p>
+					<p class="flex-item original">Original Submission</p>
+					<p class="flex-item hash">Hashed Submission</p>
+  				</div>
   				{{#each roomData}}
-  				<tr>
-					<td class="name">{{name}}</td>
-					<td class="hash" title="{{hashedBits}}">{{hashedBits}}</td>
-  				</tr>
+  					<div class="flex-container">
+						<p class="flex-item name">{{name}}</p>
+						<p class="flex-item original">{{submittedBit}}</p>
+						<p class="flex-item hash" title="{{hashedBits}}">{{hashedBits}}</p>
+  					</div>
 				{{/each}}
-			</table>
+			</div>
 			<h3>Room Information:</h3> 
 			<table class="roomInfo">
 				<tr>
-					<td>Room Administrator:</td>
-					<td class="link">{{adminName}}</td>
+					<th>Room Administrator:</th>
+					<th>Your Private Link:</th>
   				</tr>
   				<tr>
-					<td>Your Personal Identifier:</td>
-					<td class="link">{{personID}}</td>
+					<td>{{adminName}}</td>
+					<td><a target="_blank" href="{{personLink}}">{{personID}}</a></td>
   				</tr>
 			</table>
-			<br><br><br> <!--This is gross, I know-->
 		</div>
 		<!--These are essentially reactive method calls to get current information. 
 			They don't display anything, but instead trigger other things to be displayed or altered-->
