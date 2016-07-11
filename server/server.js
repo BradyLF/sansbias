@@ -1,87 +1,16 @@
 import { Meteor } from 'meteor/meteor';
 
-//create a new collection of rooms
-Rooms = new Meteor.Collection('rooms');
+//create a new collection of tables
+Tables = new Meteor.Collection('tables');
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-//publications of public info, with a passed in roomID or adminKey                           //
+//publications of public info, with a passed in tableID or adminKey                           //
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-//publish public room info based on roomID
-Meteor.publish("publicRoomInfoByRoomID", function (roomID) {
-    if (Rooms.findOne({_id: roomID}).allSubmitted && Rooms.findOne({_id: roomID}).adminSubmitted) {
-		return Rooms.find({_id: roomID}, {fields: {
-			roomSize: 1,  
-			optionsCount: 1,
-			allSubmitted: 1, 
-			adminSubmitted: 1,
-			readyToVerify: 1,
-			isOpen: 1,
-			finalSum: 1,
-		    "peopleArr.name": 1,
-			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.randomBits": 1, 
-			"peopleArr.submittedBit": 1, 
-			"peopleArr.hashesGathered": 1,
-			"peopleArr.hashedBits": 1,
-			"peopleArr.peerVerifications": 1,
-			"peopleArr.hasVerifiedPeers": 1
-	    }});
-	}
-	else {
-		return Rooms.find({_id: roomID}, {fields: {
-			roomSize: 1,  
-			optionsCount: 1,
-			allSubmitted: 1, 
-			adminSubmitted: 1,
-			readyToVerify: 1,
-			isOpen: 1,
-			finalSum: 1,
-		    "peopleArr.name": 1,
-			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.hashedBits": 1,
-			"peopleArr.submittedBit": 1, 
-	    }});
-	}
-});
-
-//publish public room info based on adminKey
-Meteor.publish("publicRoomInfoByAdminKey", function (adminKey) {
-    if (Rooms.findOne({adminKey: adminKey}).allSubmitted && Rooms.findOne({adminKey: adminKey}).adminSubmitted) {
-		return Rooms.find({adminKey: adminKey}, {fields: {
-			roomSize: 1,  
-			optionsCount: 1,
-			allSubmitted: 1, 
-			adminSubmitted: 1,
-			readyToVerify: 1,
-			isOpen: 1,
-			finalSum: 1,
-		    "peopleArr.name": 1,
-			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.randomBits": 1, 
-			"peopleArr.submittedBit": 1, 
-			"peopleArr.hashedBits": 1,
-			"peopleArr.hashesGathered": 1,
-			"peopleArr.peerVerifications": 1,
-			"peopleArr.hasVerifiedPeers": 1
-	    }});
-	}
-	else {
-		return Rooms.find({adminKey: adminKey}, {fields: {
-			roomSize: 1,  
-			optionsCount: 1,
-			allSubmitted: 1, 
-			adminSubmitted: 1,
-			readyToVerify: 1,
-			isOpen: 1,
-			finalSum: 1,
-		    "peopleArr.name": 1,
-			"peopleArr.hasSubmitted": 1, 
-			"peopleArr.hashedBits": 1,
-			"peopleArr.submittedBit": 1, 
-	    }});
-	}
+//publish public table info based on tableID
+Meteor.publish("Tables", function () {
+	return Tables.find();
 });
 
 
@@ -104,63 +33,41 @@ Meteor.methods({
 	
 	
 ///////////////////////////////////////////////////////////////////////////////////////////
-//methods for the addRoom template, which creates a new room based on passed in form data//
+//methods for the addTable template, which creates a new table based on passed in form data//
 ///////////////////////////////////////////////////////////////////////////////////////////
     
-    //inserts a new document into the collection with passed in parameters
-	insert:function (roomAdmin, roomSize, adminKey, optionsCount) {
-		//create a new entry into the array with the admin's info
-		
-		//peopleArr with varaibles each user will have
-		peerVerified = [];
-		var peopleArr = [{
-				name: roomAdmin, 
-				personID: Meteor.call("stringGen", 10), 
-				hasSubmitted: false,
-				submittedBit: "Not yet public", 
-				randomBits:  null, 
-				hasVerifiedPeers: false,
-				hashesGathered: false,
-				peerVerifications: peerVerified,
-				hashedBits: "Waiting for all submissions to be made"
-			}]
-			
-		
-		//generate a timeStamp
-		var timeStamp = Math.floor(Date.now() / 1000);
-		//insert the info into the document	
-		Rooms.insert({
-			roomAdmin: roomAdmin,
-			roomSize: 1,
-			optionsCount: optionsCount,
-			adminKey: adminKey,
-			peopleArr: peopleArr,
-			timeStamp: timeStamp,
-			finalSum: "to be determined",
-			allSubmitted: false,
-			adminSubmitted: false,
-			readyToVerify: false,
-			isOpen: true,
-		})
-    },
+    makeNewRoom:function (tableID, personID, personKey, tableAdmin, hashArr) {
+	   var cardKeyArr = [];
+	   var nonceArr = [];
+	   
+	   var peopleArr = [{
+		   personID: personID,
+		   name: tableAdmin,
+		   personKey: personKey,
+		   hashArr: hashArr,
+		   cardKeyArr: cardKeyArr,
+		   nonceArr: nonceArr,
+	   }];
+	   
+	    Tables.insert ({
+		    tableID: tableID,
+		    peopleArr: peopleArr,
+	    });
+	},
     
   
 	
 ///////////////////////////////////////////////////////////////////////////////////////////
-//methods for the displayRoom template, which retrieves data with an roomID              //
+//methods for the displayTable template, which retrieves data with an tableID              //
 ///////////////////////////////////////////////////////////////////////////////////////////
     
-    //gets an roomID with a roomID. This code is redudant but it present for consistency's sake
-    getRoomIDByRoomID:function (roomID) {
-	    return Rooms.findOne({_id: roomID})._id.toString();
-	},
-	//gets the room admin with the roomID
-	getRoomAdminByRoomID:function (roomID) {
-	    return Rooms.findOne({_id: roomID}).peopleArr[0].name;
+	//gets the table admin with the tableID
+	getTableAdminByTableID:function (tableID) {
+	    return Tables.findOne({_id: tableID}).peopleArr[0].name;
 	},
 	//gets the person's name with the personID
-	getPersonName:function (personID, roomID) {
-	    var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+	getPersonName:function (personID, tableID) {
+	    var newPeopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		var length = newPeopleArr.length;
 		
 		//searches the array and changes the apropriate person's info
@@ -170,14 +77,14 @@ Meteor.methods({
 			}
 		}
 	},
-	//gets the number range decided upon room creation
-	getOptionsCountByRoomID:function (roomID) {
-	    return Rooms.findOne({_id: roomID}).optionsCount;
+	//gets the number range decided upon table creation
+	getOptionsCountByTableID:function (tableID) {
+	    return Tables.findOne({_id: tableID}).optionsCount;
 	},
 	//updates the submitted hash by a user 
-	submitHash:function (roomID, personID, hashedBits) {	
+	submitHash:function (tableID, personID, hashedBits) {	
 		//gets the person arry and its length
-		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var newPeopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		var length = newPeopleArr.length;
 		//searches the array and changes the apropriate person's info
 		for (i = 0; i <length; i++) {
@@ -194,13 +101,13 @@ Meteor.methods({
 				}
 			}
 		}
-		//updates the room with the users hashed bits
-		Rooms.update(
-			{ "_id" : roomID },
+		//updates the table with the users hashed bits
+		Tables.update(
+			{ "_id" : tableID },
 			{ $set: { "peopleArr" : newPeopleArr} }
 		);
 		//gets the newly updated person array and its length
-		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var peopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		var length = peopleArr.length;
 		//check if all the people have submitted an option
 		var allSubmitted = true;
@@ -214,16 +121,16 @@ Meteor.methods({
 				break;
 			}
 		}
-		//update the room with the relevant info
-		Rooms.update(
-			{ "_id" : roomID },
+		//update the table with the relevant info
+		Tables.update(
+			{ "_id" : tableID },
 			{ $set: { "allSubmitted" : allSubmitted} }
 		);
 	},
 	//submits user's bits
-	submitUserBits:function (roomID, randomBits, submittedBit, personID) {	
+	submitUserBits:function (tableID, randomBits, submittedBit, personID) {	
 		//gets the person arry and its lenght
-		var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var newPeopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		var length = newPeopleArr.length;
 
 		for (i = 0; i <length; i++) {
@@ -232,17 +139,17 @@ Meteor.methods({
 				newPeopleArr[i].submittedBit = submittedBit;
 				newPeopleArr[i].hashesGathered = true;
 			}
-			//updates the room
-			Rooms.update(
-				{ "_id" : roomID },
+			//updates the table
+			Tables.update(
+				{ "_id" : tableID },
 				{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
 			);
 		}
 	},
 	//checks if the user has submitted their choice
-	hasSubmitted:function (roomID, personID) {	
+	hasSubmitted:function (tableID, personID) {	
 		//gets the person arry and its lenght
-		var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		var peopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		var length = peopleArr.length;
 		//searches the array and changes the apropriate person's info
 		for (i = 0; i <length; i++) {
@@ -258,9 +165,9 @@ Meteor.methods({
 		}
 	},
 	//performs the user's verification of its peers
-	userVerify:function (roomID, name, personID, verifyArr, allHashesValid) {
+	userVerify:function (tableID, name, personID, verifyArr, allHashesValid) {
 		//gets the people array from the collection
-	    var peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+	    var peopleArr = Tables.findOne({_id: tableID}).peopleArr;
 	    var length = peopleArr.length;
 	    //pushes the verifications to each person
 	    for (i = 0; i <length; i++) {
@@ -276,14 +183,14 @@ Meteor.methods({
 				}
 			}		    
 	   	}
-	   	//update the room with the verification or lackthereof
-	   	Rooms.update(
-			{ "_id" : roomID },
+	   	//update the table with the verification or lackthereof
+	   	Tables.update(
+			{ "_id" : tableID },
 			{ $set: { "peopleArr" : peopleArr} }
 		);
 		//iterates through the list checking if everyone has peer verified successfully
 		var allVerified = true;
-		peopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+		peopleArr = Tables.findOne({_id: tableID}).peopleArr;
 		length = peopleArr.length;
 		for (i = 0; i <length; i++) {
 			if (peopleArr[i].hasVerifiedPeers == false){
@@ -298,10 +205,10 @@ Meteor.methods({
 				finalSum = finalSum + parseInt(peopleArr[i].submittedBit);
 			}
 			//mod it by the options count
-			finalSum = finalSum % Rooms.findOne({_id: roomID}).optionsCount;
+			finalSum = finalSum % Tables.findOne({_id: tableID}).optionsCount;
 			//update the sum
-			Rooms.update(
-				{ "_id" : roomID },
+			Tables.update(
+				{ "_id" : tableID },
 				{ $set: { "finalSum" : finalSum} }
 			);	
 		}
@@ -310,28 +217,28 @@ Meteor.methods({
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-//methods for the manageRoom template, which retrieves data with an admin key            //
+//methods for the manageTable template, which retrieves data with an admin key            //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
     //gets an adminKey with an admin key. This code is redudant but it present for consistency's sake
-	getRoomAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey}).adminKey;
+	getTableAdminKey:function (adminKey) {
+	    return Tables.findOne({adminKey: adminKey}).adminKey;
 	},
-	//gets the room admin with an admin key 
-	getRoomAdminByAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey}).peopleArr[0].name;
+	//gets the table admin with an admin key 
+	getTableAdminByAdminKey:function (adminKey) {
+	    return Tables.findOne({adminKey: adminKey}).peopleArr[0].name;
 	},
-	//gets the room ID with an admin key
-	getRoomIDByAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey})._id.toString();
+	//gets the table ID with an admin key
+	getTableIDByAdminKey:function (adminKey) {
+	    return Tables.findOne({adminKey: adminKey})._id.toString();
 	},
-	//gets the number range decided upon room creation
+	//gets the number range decided upon table creation
 	getOptionsCountByAdminKey:function (adminKey) {
-	    return Rooms.findOne({adminKey: adminKey}).optionsCount;
+	    return Tables.findOne({adminKey: adminKey}).optionsCount;
 	},
 	//performs the admin's verification
 	adminVerify:function (adminKey, verifyArr, allHashesValid) {
-	    var peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+	    var peopleArr = Tables.findOne({adminKey: adminKey}).peopleArr;
 	    var length = peopleArr.length;
 	    //push the admins verifications to the corresponding peers
 	    for (i = 0; i <length; i++) {
@@ -342,13 +249,13 @@ Meteor.methods({
 	  		peopleArr[0].hasVerifiedPeers = true;
 	  	}
 	    //update the people arr
-	    Rooms.update(
+	    Tables.update(
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : peopleArr} }
 		);
 		
 		//get the newly updated people array
-		peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		peopleArr = Tables.findOne({adminKey: adminKey}).peopleArr;
 		length = peopleArr.length;
 		var allVerified = true;
 		
@@ -366,36 +273,36 @@ Meteor.methods({
 			for (i = 0; i <length; i++) {
 				finalSum = finalSum + parseInt(peopleArr[i].submittedBit);
 			}
-			finalSum = finalSum % Rooms.findOne({adminKey: adminKey}).optionsCount;
-			Rooms.update(
+			finalSum = finalSum % Tables.findOne({adminKey: adminKey}).optionsCount;
+			Tables.update(
 				{ "adminKey" : adminKey },
 				{ $set: { "finalSum" : finalSum} }
 			);
 		}
 	},	
-	//submits the admin's hash and closes room
+	//submits the admin's hash and closes table
 	submitAdminHash:function (adminKey, hashedBits) {	
 		//gets the person arry and its lenght
-		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		var newPeopleArr = Tables.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission
 		newPeopleArr[0].hasSubmitted = true;
 		newPeopleArr[0].hashedBits = hashedBits;
-		//updates the room
-		Rooms.update(
+		//updates the table
+		Tables.update(
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true, "readyToVerify": true, "isOpen": false} }
 		);
 	},	
-	//submits the admin's hash and closes room
+	//submits the admin's hash and closes table
 	submitAdminBits:function (adminKey, randomBits, submittedBit) {
 		//gets the person arry and its lenght
-		var newPeopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		var newPeopleArr = Tables.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission
 		newPeopleArr[0].randomBits = randomBits;
 		newPeopleArr[0].submittedBit = submittedBit;
 		newPeopleArr[0].hashesGathered = true;
-		//updates the room
-		Rooms.update(
+		//updates the table
+		Tables.update(
 			{ "adminKey" : adminKey },
 			{ $set: { "peopleArr" : newPeopleArr, "adminSubmitted": true} }
 		);
@@ -403,7 +310,7 @@ Meteor.methods({
 	//checks if the user has submitted their choice
 	hasAdminSubmitted:function (adminKey) {	
 		//gets the person arry and its lenght
-		var peopleArr = Rooms.findOne({adminKey: adminKey}).peopleArr;
+		var peopleArr = Tables.findOne({adminKey: adminKey}).peopleArr;
 		//protection against double submission
 		if (peopleArr[0].hasSubmitted == true){
 			return true;
@@ -416,14 +323,14 @@ Meteor.methods({
 	
 	
 ///////////////////////////////////////////////////////////////////////////////////////////
-//methods for the joinRoom template, which add a new member to a room with a given ID    //
+//methods for the joinTable template, which add a new member to a table with a given ID    //
 ///////////////////////////////////////////////////////////////////////////////////////////
     
-    //adds a new room member to an existing room
-	addNewMember:function (roomID, newMemeberName) {
-		if (Rooms.findOne({_id: roomID}).isOpen){
+    //adds a new table member to an existing table
+	addNewMember:function (tableID, newMemeberName) {
+		if (Tables.findOne({_id: tableID}).isOpen){
 			//gets the current array from the collection
-			var newPeopleArr = Rooms.findOne({_id: roomID}).peopleArr;
+			var newPeopleArr = Tables.findOne({_id: tableID}).peopleArr;
 			//generates a new personID for the newmember
 			var personID = Meteor.call("stringGen", 6)
 			//pushes the new person into the array
@@ -440,12 +347,12 @@ Meteor.methods({
 					peerVerifications: peerVerified,
 					hashedBits: "Waiting for submission"
 				});
-			//gets the current room size, and increases it by one
-			var newRoomSize = Rooms.findOne({_id: roomID}).roomSize + 1;
-			//updates the room
-			Rooms.update(
-				{ "_id" : roomID },
-				{ $set: { "peopleArr" : newPeopleArr, "roomSize": newRoomSize, "allSubmitted": false} }
+			//gets the current table size, and increases it by one
+			var newTableSize = Tables.findOne({_id: tableID}).tableSize + 1;
+			//updates the table
+			Tables.update(
+				{ "_id" : tableID },
+				{ $set: { "peopleArr" : newPeopleArr, "tableSize": newTableSize, "allSubmitted": false} }
 			);		
 			return personID;
 		}

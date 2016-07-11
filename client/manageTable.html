@@ -1,26 +1,26 @@
 <!-- admin template-->
-<template name="manageRoom">
+<template name="manageTable">
 	<div class="animated fadeIn content">
 		<h1 class="title">Welcome {{adminName}}</h1>
-		<p class="room-subtitle">you are the room administrator</p>
-			<h3 class="title" id="manage-title">Room Code: {{roomCode}}</h3>
+		<p class="table-subtitle">you are the table administrator</p>
+			<h3 class="title" id="manage-title">Table Code: {{tableCode}}</h3>
 			{{#if showSubmit}}
 				<h3>Enter an integer 0 through {{optionsCount}}:</h3>
 				<input placeholder="e.g. 0" class="selectedOption" type="number" value="">
-				<button class="submit flat-button" type="submit" value="submit">Close Room & Submit Choice</button>
+				<button class="submit flat-button" type="submit" value="submit">Close Table & Submit Choice</button>
 			{{else}}
 				<h3 class="title" id="manage-title">The verified calculated sum is {{finalSum}}</h3>
-				<p class="room-subtitle">The page may refresh numerous times during calculation. <a target="_blank" href="/about">How is this calculated?</a></p>
+				<p class="table-subtitle">The page may refresh numerous times during calculation. <a target="_blank" href="/about">How is this calculated?</a></p>
 				<hr>
 			{{/if}}
-			<h3>Room Members ( {{roomSize}} Online )</h3>
-			<div class="room-info">
+			<h3>Table Members ( {{tableSize}} Online )</h3>
+			<div class="table-info">
 				<div class="flex-container table-title">
 					<p class="flex-item name">Name</p>
 					<p class="flex-item original">Original Submission</p>
 					<p class="flex-item hash">Hashed Submission</p>
   				</div>
-  				{{#each roomData}}
+  				{{#each tableData}}
   					<div class="flex-container">
 						<p class="flex-item name">{{name}}</p>
 						<p class="flex-item original">{{submittedBit}}</p>
@@ -29,15 +29,15 @@
 				{{/each}}
 			</div>
 			<hr>
-			<h3>Room Information:</h3>
-			<table class="roomInfo">
+			<h3>Table Information:</h3>
+			<table class="tableInfo">
 				<tr>
-					<th>Room Administrator</th>
+					<th>Table Administrator</th>
 					<th>Public Invite Code</th>
 				</tr>
 				<tr>
 					<td>{{adminName}}</td>
-					<td><a target="_blank" href="{{joinLink}}">{{roomCode}}</a></td>
+					<td><a target="_blank" href="{{joinLink}}">{{tableCode}}</a></td>
   				</tr>
 			</table>
 			<!--These are essentially reactive method calls to get current information. 
