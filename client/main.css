@@ -96,7 +96,6 @@ html, body {
 	background-color: #3A7EB7;
 	font-weight: 700;
 	min-height: 80px;
-	box-shadow: 1px 5px 20px 1px rgba(0, 0, 0, 0.18);
 }
 
 #navbar ul{
@@ -221,10 +220,38 @@ hr {
 .flex-item {
 	border-bottom: 1px solid black;
     height: auto;
+    width: 50%;
     padding: 10px;
     vertical-align: middle;
     margin: 14px;
 }
+
+.flex-item button{
+	width: 100%;
+	background-color: #3A7EB7;
+	color: white;
+	border: none;
+	padding: 14px;
+	border-radius: 3px;
+}
+
+.name {
+	border: 3px solid rgba(58, 127, 184, 0);
+	border-bottom: 1px solid black;
+	border-radius: 3px;
+}
+
+.top {
+	text-align: center;
+	border: 3px solid #3A7EB7;
+	border-radius: 3px;
+}
+
+.bottom {
+	border-bottom: none !important;
+	padding: 0 !important;
+}
+
 
 .table-title {
 	background-color: #d4d4d4 !important;
@@ -293,9 +320,11 @@ select {
 	color: #4b4a4a;
 	min-width: 300px;
 	margin-bottom: 20px;
-	font-size: large;
-	
-	
+	font-size: large;	
+}
+
+.table-info {
+	padding-bottom: 150px;
 }
 
 input {
@@ -307,6 +336,15 @@ input {
 	font-size: large;
 }
 
+.deal-cards {
+	width: 100%;
+	padding: 10px !important;
+}
+
+.deal-cards h3{
+	margin: 0px !important;
+	padding: 10px;
+}
 
 .button-container {
 	margin-top: 100px;
@@ -382,6 +420,17 @@ input {
 	background-color: #d4d4d4;
 	color: #4b4a4a;
 	padding: 10px;
+	text-decoration: none;
+	border: none;
+	width: 100%;
+}
+
+#table-title {
+	margin-top: 30px;
+	margin-bottom: -0px;
+	background-color: #d4d4d4;
+	color: #4b4a4a;
+	padding: 20px;
 	text-decoration: none;
 	border: none;
 	width: 100%;
