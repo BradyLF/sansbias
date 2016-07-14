@@ -150,7 +150,7 @@ Template.displayTable.helpers({
 		var length = peopleArr.length;		
 				
 		for (i = 0; i <length; i++) {
-			if (peopleArr[i].personID = personID) {
+			if (peopleArr[i].personID == personID) {
 				return peopleArr[i].name.toString();
 			}
 		}
@@ -181,6 +181,11 @@ Template.displayTable.helpers({
 			}
 			if (peopleArr[i].handArr.length == 0){
 				peopleArr[i].handArr.push("No Cards Yet");
+				peopleArr[i].handArrLength = 0;
+			}
+			else {
+				var handArrLength = peopleArr[i].handArr.length;
+				peopleArr[i].handArrLength = handArrLength;
 			}
 			
 			if (peopleArr[i].nonceArr.length == 0){
@@ -194,14 +199,16 @@ Template.displayTable.helpers({
 			
 			if (peopleArr[i].cardKeyArr.length == 0){
 				peopleArr[i].hashArr.push({hash: "No Cards Yet"});
+				
 			}
 			else {
-				for (x = 0; x < peopleArr[i].nonceArr.length; x++) {
+				for (x = 0; x < peopleArr[i].hashArr.length; x++) {
 					peopleArr[i].hashArr[x] = { hash: peopleArr[i].hashArr[x].toString()}
+	
 				}
 			}
+			
 		}
-		
 		return peopleArr;
 	},
 	
@@ -213,7 +220,58 @@ Template.displayTable.helpers({
 	},
 	
 	showDeal: function () {
-		return Session.get('showDeal');
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		if (peopleArr.length > 1) {
+			return Session.get('showDeal');
+		}
+		else {
+			return false;
+		}
+	},
+	
+	nonceArrLength: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				return peopleArr[i].nonceArr.length;
+			}
+		}
+	},
+	
+	cardKeyArrLength: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				return peopleArr[i].cardKeyArr.length;
+			}
+		}
+	},
+	
+	hashArrLength: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				return peopleArr[i].hashArr.length;
+			}
+		}
 	},
 	
 	submitCards: function () {
@@ -223,11 +281,13 @@ Template.displayTable.helpers({
 		
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		//get the cards requested
+		var cardKeyArrLength = 0;
 		var cardsRequested = 0;
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].personID == personID){
 				if (peopleArr[i].cardsRequested > 0){
 					cardsRequested = peopleArr[i].cardsRequested;
+					cardKeyArrLength = peopleArr[i].cardKeyArr.length;
 				}
 			}
 		}
@@ -256,19 +316,62 @@ Template.displayTable.helpers({
 			
 			var nonceArrString = localStorage.getItem("nonceArr-"+personID);
 			var nonceArr = nonceArrString.split(",");
+						
+			cardKeyArr = cardKeyArr.slice(cardKeyArrLength, cardKeyArrLength + cardsRequested);
+			nonceArr = nonceArr.slice(cardKeyArrLength, cardKeyArrLength + cardsRequested);
 			
-			
-			cardKeyArr = cardKeyArr.slice(0, cardsRequested);
-			nonceArr = nonceArr.slice(0, cardsRequested);
-			
-			console.log(cardKeyArr);
-			console.log(nonceArr);
 			
 			Meteor.call("submitCards", tableID, personID, cardKeyArr, nonceArr);
+		}
+	},
+	
+	verifyCards: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		//get the cards requested
+		var cardKeyArrLength = 0;
+		var verificationsRequested = 0;
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				if (peopleArr[i].verificationsRequested > 0){
+					verificationsRequested = peopleArr[i].verificationsRequested;
+					cardKeyArrLength = peopleArr[i].cardKeyArr.length;
+				}
+			}
+		}
+		
+		//if there are cards requested
+		if (verificationsRequested > 0){
+			for (i = verificationsRequested; i > 0; i--) {
+				var deckArrString = localStorage.getItem("deckArr-"+personID);
+				var deckArr = deckArrString.split(",");	
+				console.log(Tables.findOne({tableID: tableID}).deckArr);
+				console.log(deckArr);
+				var total = 0;
+				for (x = 0; x < peopleArr.length; x++) {
+					total = total + parseInt(peopleArr[x].cardKeyArr[peopleArr[x].cardKeyArr.length - i]);
+				}
+				console.log("if " + deckArr[total % deckArr.length] + " == " + dealtCards[dealtCards.length - i])
+				console.log(total % deckArr.length);
+				if (deckArr[total % deckArr.length] == dealtCards[dealtCards.length - i]) {
+					deckArr.splice(total % deckArr.length, 1);
+					localStorage.setItem("deckArr-"+personID, deckArr);
+					console.log("verified");
+				}
+				else {
+					console.log("not verified");
+				}
+			}
+		verificationsRequested = 0;
 		}
 	}
 
 });
+
     
 //events for displayTable
 Template.displayTable.events({	
