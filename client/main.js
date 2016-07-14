@@ -329,7 +329,8 @@ Template.displayTable.helpers({
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
-		
+		var personKey = params.personKey.toString();	
+			
 		var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		//get the cards requested
@@ -344,29 +345,46 @@ Template.displayTable.helpers({
 			}
 		}
 		
+		
+		
 		//if there are cards requested
 		if (verificationsRequested > 0){
+			var verificationCount = 0;
+			var allVerified = true;
 			for (i = verificationsRequested; i > 0; i--) {
 				var deckArrString = localStorage.getItem("deckArr-"+personID);
 				var deckArr = deckArrString.split(",");	
-				console.log(Tables.findOne({tableID: tableID}).deckArr);
-				console.log(deckArr);
 				var total = 0;
 				for (x = 0; x < peopleArr.length; x++) {
 					total = total + parseInt(peopleArr[x].cardKeyArr[peopleArr[x].cardKeyArr.length - i]);
 				}
-				console.log("if " + deckArr[total % deckArr.length] + " == " + dealtCards[dealtCards.length - i])
-				console.log(total % deckArr.length);
 				if (deckArr[total % deckArr.length] == dealtCards[dealtCards.length - i]) {
 					deckArr.splice(total % deckArr.length, 1);
 					localStorage.setItem("deckArr-"+personID, deckArr);
-					console.log("verified");
+					console.log("card verified");
+					verificationCount++;
 				}
 				else {
-					console.log("not verified");
+					allVerified = false
 				}
 			}
-		verificationsRequested = 0;
+			
+			for (x = 0; x < peopleArr.length; x++) {
+				for (j= 0; j< peopleArr[x].cardKeyArr.length; j++) {
+				var gatheredHashesString = localStorage.getItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID);
+				var gatheredHashes = gatheredHashesString.split(",");	
+				var calculatedHash = CryptoJS.SHA256(peopleArr[x].cardKeyArr[j].toString() + peopleArr[x].nonceArr[j].toString()).toString();
+					if (gatheredHashes[j] == calculatedHash){
+						console.log("hash verified");
+					}
+					else {
+						allVerified = false
+					}
+				}
+			}
+			if (allVerified) {
+				Meteor.call("sendVerifications", tableID, personID, personKey, verificationCount);
+			}
 		}
 	}
 
@@ -382,7 +400,7 @@ Template.displayTable.events({
 		var personID = params.personID.toString();
 		
 		Meteor.call("requestDealCards", tableID, personID);
-
+		
 	},
 }); 
     

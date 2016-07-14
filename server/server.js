@@ -140,21 +140,20 @@ Meteor.methods({
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 	    var length = peopleArr.length;
 		
-		var lastPersonInt = 0;
-	    var allSubmitted = true;
+	    var isLastPerson;
 		for (i = 0; i < length; i++){
 		    if (peopleArr[i].personID == personID){ 
-			    if (peopleArr[i].cardKeyArr.length == peopleArr.length*2 -1) {
+			    if (peopleArr.length - 1 == i) {
+				    isLastPerson = true;
 				}
 				else {
-					allSubmitted = false;
+					isLastPerson = false;
 				}
 			}
 		}
 		    
-		console.log(allSubmitted);
-		//console.log("isLastPerson is " + isLastPerson + " and is being called by person " + lastPersonInt);
-		if (allSubmitted && areDealCards) {
+		if (isLastPerson && areDealCards) {
+			console.log("I should only see this once");
 			var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
 			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 			var length = peopleArr.length;
@@ -164,12 +163,10 @@ Meteor.methods({
 					var deckArr = Tables.findOne({tableID: tableID}).deckArr;
 					var total = 0;
 					for (x = 0; x < length; x++){
-						console.log(peopleArr[x].cardKeyArr);
 						total = total + parseInt(peopleArr[x].cardKeyArr[0].toString());
 					}
 					peopleArr[i].handArr.push(deckArr[total % deckArr.length])
 					dealtCards.push(deckArr[total % deckArr.length]);
-					console.log(total % deckArr.length);
 					if (isNaN(deckArr[total % deckArr.length])){
 						peopleArr[i].handValue = peopleArr[i].handValue + 10;
 					}
@@ -193,7 +190,6 @@ Meteor.methods({
 						}
 						peopleArr[i].handArr.push(deckArr[total % deckArr.length])
 						dealtCards.push(deckArr[total % deckArr.length]);
-					console.log(total % deckArr.length);
 						if (isNaN(deckArr[total % deckArr.length])){
 							peopleArr[i].handValue = peopleArr[i].handValue + 10;
 						}
@@ -220,6 +216,27 @@ Meteor.methods({
 				{ $set: { "hasDealCards" : true, "peopleArr" : peopleArr} }
 			);
 		}
+    },
+    
+    
+    
+    sendVerifications:function (tableID, personID, personKey, verificationCount) {
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    for (i = 0; i < length; i++){
+		    if (peopleArr[i].personKey == personKey){
+			    verificationsRequested = peopleArr[i].verificationsRequested;
+			    verificationsRequested = verificationsRequested - verificationCount;
+			    
+			    peopleArr[i].cardsVerified = verificationCount;
+			    peopleArr[i].verificationsRequested = verificationsRequested;
+			    Tables.update(
+			       { "tableID" : tableID },
+				   { $set: { "peopleArr" : peopleArr} }
+				);
+		    }
+	    }
     },
     
 

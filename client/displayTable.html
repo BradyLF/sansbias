@@ -24,8 +24,8 @@
 						<p class="flex-item bottom"></p>
 						<p class="flex-item bottom"><button onclick="swal('{{handArr}}')">Hand ({{handArrLength}})</button></p>
 						<p class="flex-item bottom"><button onclick="swal('{{cardKeyArr}}')">Submitted Cards ({{cardKeyArrLength}})</button></p>
-						<p class="flex-item bottom"><button onclick="swal('','{{#each nonceArr}} {{nonce}} - {{/each}}')">Submitted Nonces ({{nonceArrLength}})</button></p>
-						<p class="flex-item bottom"><button onclick="swal('', '{{#each hashArr}} {{hash}} - {{/each}}')">Submitted Hashes ({{hashArrLength}})</button></p>
+						<p class="flex-item bottom"><button onclick="swal('','{{#each nonceArr}} - {{nonce}} - {{/each}}')">Submitted Nonces ({{nonceArrLength}})</button></p>
+						<p class="flex-item bottom"><button onclick="swal('', '{{#each hashArr}} - {{hash}} - {{/each}}')">Submitted Hashes ({{hashArrLength}})</button></p>
   					</div>
 				{{/each}}
 				{{submitCards}}
