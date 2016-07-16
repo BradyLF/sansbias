@@ -57,6 +57,7 @@ Meteor.methods({
 		   verificationsRequested:0,
 		   cardsRequested: 0,
 		   isDealer: true,
+		   isTurn: true,
 	   }];
 	   
 	    Tables.insert ({
@@ -141,15 +142,15 @@ Meteor.methods({
 	    var length = peopleArr.length;
 		
 	    var isLastPerson;
+	    var peopleSubmitted = 0;
 		for (i = 0; i < length; i++){
-		    if (peopleArr[i].personID == personID){ 
-			    if (peopleArr.length - 1 == i) {
-				    isLastPerson = true;
-				}
-				else {
-					isLastPerson = false;
-				}
+		    if (peopleArr[i].cardsRequested == 0){ 
+			    peopleSubmitted++
 			}
+		}
+		
+		if (peopleSubmitted == peopleArr.length) {
+			isLastPerson = true;
 		}
 		    
 		if (isLastPerson && areDealCards) {
@@ -237,6 +238,49 @@ Meteor.methods({
 				);
 		    }
 	    }
+	    
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    
+	    var isLastPerson;
+	    var peopleSubmitted = 0;
+		for (i = 0; i < length; i++){
+		    if (peopleArr[i].verificationsRequested == 0){ 
+			    peopleSubmitted++
+			}
+		}
+		
+		if (peopleSubmitted == peopleArr.length) {
+			isLastPerson = true;
+		}
+	
+		if (isLastPerson) {
+	    for (i = 0; i < length; i++){ 
+		    if (peopleArr[i].isTurn) {
+		    if (i != length-1){
+			    console.log("entering the if");
+			   peopleArr[i].isTurn = false;
+			   peopleArr[i+1].isTurn = true;
+			   Tables.update(
+			       { "tableID" : tableID },
+				   { $set: { "peopleArr" : peopleArr} }
+				);
+			   break; 
+		    }
+		    else {
+			    console.log("entering the else");
+			   peopleArr[i].isTurn = false;
+			   peopleArr[0].isTurn = true;
+			   Tables.update(
+			       { "tableID" : tableID },
+				   { $set: { "peopleArr" : peopleArr} }
+				);
+			   break; 
+		    }
+		    }
+		}
+		}
     },
     
 
@@ -269,6 +313,7 @@ Meteor.methods({
 				cardsRequested: 0,
 				verificationsRequested:0,
 				cardsVerified: 0,
+				isTurn: false,
 			})
 			
 			Tables.update(

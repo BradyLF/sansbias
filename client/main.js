@@ -52,7 +52,7 @@ Router.route('/table/:tableID/:personID/:personKey', function () {
         } else {
 	        Session.set('showDeal',false);
         }
-	});  
+	});
 	this.render("displayTable");
 });
 
@@ -223,9 +223,33 @@ Template.displayTable.helpers({
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
 		
-		if (peopleArr.length > 1) {
+		if (peopleArr.length > 1 && !hasDealCards) {
 			return Session.get('showDeal');
+		}
+		else {
+			return false;
+		}
+	},
+	
+	showPlayerChoices: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
+		var isDealer = Tables.findOne({tableID: tableID}).isDealer;
+		var isTurn = false;
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				isTurn = peopleArr[i].isTurn;
+			}
+		}
+		
+		if (hasDealCards && isTurn && !isDealer) {
+			return true;
 		}
 		else {
 			return false;
@@ -398,10 +422,34 @@ Template.displayTable.events({
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
-		
-		Meteor.call("requestDealCards", tableID, personID);
+		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
+		if (!hasDealCards) {
+			Meteor.call("requestDealCards", tableID, personID);
+		}
 		
 	},
+	
+	'click .hit': function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();
+		
+		console.log("hit");
+		
+	},
+	
+	'click .stay': function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();
+		
+		console.log("stay");
+		
+	},
+	
+	
 }); 
     
 ///////////////////////////////////////////////////////////////////////////////////////////

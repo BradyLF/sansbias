@@ -341,10 +341,22 @@ input {
 	padding: 10px !important;
 }
 
+.player-choices h3{
+	margin: 0px !important;
+	padding: 10px;
+}
+
+.player-choices {
+	display: inline-block;
+	width: 49.85%;
+	padding: 10px !important;
+}
+
 .deal-cards h3{
 	margin: 0px !important;
 	padding: 10px;
 }
+
 
 .button-container {
 	margin-top: 100px;
