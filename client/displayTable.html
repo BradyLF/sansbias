@@ -16,6 +16,11 @@
 				<button class="submit flat-button player-choices stay" type="submit" value="submit"><h3>Stay</h3></button>
 			{{else}}
 			{{/if}}
+			{{#if gameOver}}
+				<hr>
+				<button class="submit flat-button deal-cards" type="submit" value="submit"><h3>Play Again</h3></button>
+			{{else}}
+			{{/if}}
 			<div class="table-info">
 			<h3 class="title" id="table-title">Table Members ({{tableSize}} Online)</h3>
   				{{#each tableData}}

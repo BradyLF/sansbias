@@ -256,6 +256,21 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	gameOver: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				isDealer = peopleArr[i].isDealer;
+			}
+		}
+		
+		return Tables.findOne({tableID: tableID}).gameOver && isDealer;		
+	},
+	
 	nonceArrLength: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -422,9 +437,10 @@ Template.displayTable.events({
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
 		if (!hasDealCards) {
-			Meteor.call("requestDealCards", tableID, personID);
+			Meteor.call("requestDealCards", tableID, personID, personKey);
 		}
 		
 	},
@@ -435,7 +451,7 @@ Template.displayTable.events({
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
 		
-		console.log("hit");
+		Meteor.call("requestHitCards", tableID, personID, personKey);
 		
 	},
 	
@@ -445,7 +461,7 @@ Template.displayTable.events({
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
 		
-		console.log("stay");
+		Meteor.call("changeTurn", tableID, personID, personKey);
 		
 	},
 	

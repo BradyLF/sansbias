@@ -68,6 +68,10 @@ Meteor.methods({
 			isOpen: true,
 			tableSize: 1,
 			hasDealCards: false,
+			isStaying: false,
+			isHitting: false,
+			playerToHit: null,
+			gameOver: false,
 			
 	    });
 	},
@@ -92,12 +96,12 @@ Meteor.methods({
 	    return false;
     },
     
-    requestDealCards:function (tableID, personID) {
+    requestDealCards:function (tableID, personID, personKey) {
 	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 	    var length = peopleArr.length;
 	    
 	    for (i = 0; i < length; i++){
-		    if (peopleArr[i].personID == personID){
+		    if (peopleArr[i].personKey == personKey){
 			    if (peopleArr[i].isDealer){
 				    for (i = 0; i < length; i++){
 					    peopleArr[i].cardsRequested = peopleArr.length*2 - 1;
@@ -111,6 +115,31 @@ Meteor.methods({
 			{ $set: { "peopleArr" : peopleArr, "isOpen" : false} }
 		);
     },
+    
+    requestHitCards:function (tableID, personID, personKey) {
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    for (i = 0; i < length; i++){
+		    if (peopleArr[i].personKey == personKey){
+			    if (peopleArr[i].isTurn){
+				    for (x = 0; x < length; x++){
+					    peopleArr[x].cardsRequested = 1;
+				    }
+				    Tables.update(
+						{ "tableID" : tableID },
+						{ $set: { "isHitting" : true, "playerToHit" : personID} }
+					);
+			    }
+		    }
+	    }
+	    
+	    Tables.update(
+			{ "tableID" : tableID },
+			{ $set: { "peopleArr" : peopleArr} }
+		);
+    },
+
     
     submitCards:function (tableID, personID, cardKeyArr, nonceArr) {
 	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
@@ -126,8 +155,10 @@ Meteor.methods({
 	    for (i = 0; i < length; i++){
 		    if (peopleArr[i].personID == personID){
 			    if (peopleArr[i].cardsRequested == cardKeyArr.length){
-				    peopleArr[i].cardKeyArr = cardKeyArr;
-				    peopleArr[i].nonceArr = nonceArr;
+				    for (x = 0; x < cardKeyArr.length; x++) {
+				        peopleArr[i].cardKeyArr.push(cardKeyArr[x]);
+				        peopleArr[i].nonceArr.push(nonceArr[x]);
+				    }
 				    peopleArr[i].cardsRequested = 0;
 			    }
 		    }
@@ -152,7 +183,8 @@ Meteor.methods({
 		if (peopleSubmitted == peopleArr.length) {
 			isLastPerson = true;
 		}
-		    
+		  
+		//if it's the deal  
 		if (isLastPerson && areDealCards) {
 			console.log("I should only see this once");
 			var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
@@ -217,6 +249,53 @@ Meteor.methods({
 				{ $set: { "hasDealCards" : true, "peopleArr" : peopleArr} }
 			);
 		}
+		
+		var isHitting = Tables.findOne({tableID: tableID}).isHitting;
+		
+		
+		if (isLastPerson && isHitting) {
+			console.log("test");
+			var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
+			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+			
+			var playerToHit = Tables.findOne({tableID: tableID}).playerToHit;
+			var length = peopleArr.length;
+			var cardsDealt = 0;
+			
+			for (i = 0; i < length; i++){
+				if (peopleArr[i].personID == playerToHit){
+					var deckArr = Tables.findOne({tableID: tableID}).deckArr;
+					var total = 0;
+					for (x = 0; x < length; x++){
+						total = total + parseInt(peopleArr[x].cardKeyArr[peopleArr[x].cardKeyArr.length-1].toString());
+					}
+					peopleArr[i].handArr.push(deckArr[total % deckArr.length])
+					dealtCards.push(deckArr[total % deckArr.length]);
+					if (isNaN(deckArr[total % deckArr.length])){
+						peopleArr[i].handValue = peopleArr[i].handValue + 10;
+					}
+					else {
+						peopleArr[i].handValue = peopleArr[i].handValue + parseInt(deckArr[total % deckArr.length]);
+					}
+					deckArr.splice(total % deckArr.length, 1);
+					Tables.update(
+						{ "tableID" : tableID },
+						{ $set: { "deckArr" : deckArr, "peopleArr" : peopleArr, "dealtCards" : dealtCards} }
+					);
+					cardsDealt++;
+				}
+			}
+			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+			var length = peopleArr.length;
+			
+			for (i = 0; i < length; i++){
+				peopleArr[i].verificationsRequested = 1;
+		    }
+			Tables.update(
+				{ "tableID" : tableID },
+				{ $set: { "peopleArr" : peopleArr, "playerToHit" : null} }
+			);
+		}
     },
     
     
@@ -230,7 +309,7 @@ Meteor.methods({
 			    verificationsRequested = peopleArr[i].verificationsRequested;
 			    verificationsRequested = verificationsRequested - verificationCount;
 			    
-			    peopleArr[i].cardsVerified = verificationCount;
+			    peopleArr[i].cardsVerified = peopleArr[i].cardsVerified + verificationCount;
 			    peopleArr[i].verificationsRequested = verificationsRequested;
 			    Tables.update(
 			       { "tableID" : tableID },
@@ -255,34 +334,135 @@ Meteor.methods({
 			isLastPerson = true;
 		}
 	
-		if (isLastPerson) {
-	    for (i = 0; i < length; i++){ 
-		    if (peopleArr[i].isTurn) {
-		    if (i != length-1){
-			    console.log("entering the if");
-			   peopleArr[i].isTurn = false;
-			   peopleArr[i+1].isTurn = true;
-			   Tables.update(
-			       { "tableID" : tableID },
-				   { $set: { "peopleArr" : peopleArr} }
-				);
-			   break; 
-		    }
-		    else {
-			    console.log("entering the else");
-			   peopleArr[i].isTurn = false;
-			   peopleArr[0].isTurn = true;
-			   Tables.update(
-			       { "tableID" : tableID },
-				   { $set: { "peopleArr" : peopleArr} }
-				);
-			   break; 
-		    }
-		    }
-		}
+	
+	    var isHitting = Tables.findOne({tableID: tableID}).isHitting;
+	
+		if (isLastPerson && isHitting == false) {
+			for (i = 0; i < length; i++) {
+				if (peopleArr[i].isTurn) {
+					if (i != length - 1) {
+						peopleArr[i].isTurn = false;
+						peopleArr[i + 1].isTurn = true;
+						Tables.update(
+							{"tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr}
+						});
+						if (peopleArr[i+1].isDealer) {
+							var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+							var length = peopleArr.length;
+							var ID = peopleArr[i+1].personID;
+
+							for (i = 0; i < length; i++) {
+								for (x = 0; x < length; x++) {
+									peopleArr[x].cardsRequested = 1;
+                        		}
+								Tables.update(
+									{"tableID": tableID}, {
+									$set: {"isHitting": true, "playerToHit": ID}
+                        		});
+                    		}	
+						}
+						Tables.update(
+						{ "tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr}
+		                });
+						break;
+					} 
+					else {
+						peopleArr[i].isTurn = false;
+						peopleArr[0].isTurn = true;
+
+
+						if (peopleArr[0].isDealer) {
+							var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+							var length = peopleArr.length;
+							var ID = peopleArr[0].personID;
+
+							for (i = 0; i < length; i++) {
+								for (x = 0; x < length; x++) {
+									peopleArr[x].cardsRequested = 1;
+                        		}
+								Tables.update(
+									{"tableID": tableID}, {
+									$set: {"isHitting": true, "playerToHit": ID}
+                        		});
+                    		}	
+						}
+						Tables.update(
+						{ "tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr}
+		                });
+                break;
+            }
+        }
+    }
+}    },
+    
+    
+    changeTurn:function (tableID, personID, personKey) { 
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	
+	
+	    var isHitting = Tables.findOne({tableID: tableID}).isHitting;
+	
+	    	for (i = 0; i < length; i++){ 
+		    	if (peopleArr[i].isTurn && peopleArr[i].personKey == personKey) {
+					if (i != length - 1) {
+						peopleArr[i].isTurn = false;
+						peopleArr[i + 1].isTurn = true;
+						Tables.update(
+							{"tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr}
+						});
+						if (peopleArr[i+1].isDealer) {
+							var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+							var length = peopleArr.length;
+							var ID = peopleArr[i+1].personID;
+
+							for (i = 0; i < length; i++) {
+								for (x = 0; x < length; x++) {
+									peopleArr[x].cardsRequested = 1;
+                        		}
+								Tables.update(
+									{"tableID": tableID}, {
+									$set: {"isHitting": true, "playerToHit": ID}
+                        		});
+                    		}	
+						}
+						Tables.update(
+						{ "tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr, "gameOver" : true}
+		                });
+						break;
+		    		}
+					else {
+						var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+						var length = peopleArr.length;
+					   peopleArr[i].isTurn = false;
+					   peopleArr[0].isTurn = true;
+					   if (peopleArr[0].isDealer) {
+							var ID = peopleArr[0].personID;
+
+							for (i = 0; i < length; i++) {
+								for (x = 0; x < length; x++) {
+									peopleArr[x].cardsRequested = 1;
+                        		}
+								Tables.update(
+									{"tableID": tableID}, {
+									$set: {"isHitting": true, "playerToHit": ID}
+                        		});
+                    		}	
+						}
+						Tables.update(
+						{ "tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr, "gameOver" : true}
+		                });
+						break; 
+		    		}
+		    	}
 		}
     },
-    
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
