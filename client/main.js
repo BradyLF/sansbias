@@ -79,41 +79,51 @@ Template.addTable.events({
 		
 		//get the tableAdmin
 		var tableAdmin = $('.table-admin').val();
-		//generate the admin key, create the table, and redirect to new table
-		swal({   
-			title: "Please Type Some Random Characters!",   
-			type: "input", 
-			showCancelButton: false,   
-			closeOnConfirm: false,   
+		
+		//sent an alert to the user to get random entropy
+		swal({ 
+			//contents of alert  
+			title: "Please Type Some Random Characters",   
+			type: "input",  
 			animation: "slide-from-top",   
-			inputPlaceholder: "at least 16 characters" }, 
-			function(inputValue){   
-				if (inputValue === false) return false;      
+			showCancelButton: false,   
+			closeOnConfirm: false,   }, 
+				
+			//what to do with the input
+			function(inputValue){  
+				//check for nulls 
+				if (inputValue === false) { return false; }   
 				if (inputValue === "") {     
 					swal.showInputError("You need to write something!");     
-					return false   }
-				if (inputValue.length < 16) {     
-					swal.showInputError("You need to type at least 16 characters");     
-					return false   }   
+					return false   
+				}  
+				//if all is ok, create the user's arrays
 				else {
+					//create arrays
 					var cardKeyArr = [];
 					var nonceArr = [];
-					var hashArr = [];
-					var hash = CryptoJS.SHA256(inputValue).toString();
-					var dexHash = parseInt(hash, 16);
-					
-					
+					var hashArr = [];	
+
+					//push each card's info into the array
 					for (i = 52; i > 0; i--) {
-						var moddedDexHash = dexHash % i;
-						cardKeyArr.push(moddedDexHash);
 						
-						var nonce = stringGen(24);
+						//get the SHA hash from the input value plus i
+						var hash = CryptoJS.SHA256(inputValue + i.toString()).toString();
+						var decimalHash = parseInt(hash, 16);
+						
+						//mod the hash and put it into the array
+						var moddedDecimalHash = decimalHash % i;
+						cardKeyArr.push(moddedDecimalHash);
+						
+						//generate the nonce and push it into the array
+						var nonce = stringGen(32);
 						nonceArr.push(nonce);
 						
-						hashArr.push(CryptoJS.SHA256(moddedDexHash.toString() + nonce.toString()).toString());
+						//generate the card's hash and push it to the hash array
+						hashArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
 					}
-					
-					var tableID = stringGen(14);
+
+					var tableID = stringGen(16);
 					var personID = stringGen(8);
 					var personKey = stringGen(4);
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
@@ -239,7 +249,7 @@ Template.displayTable.helpers({
 		var personID = params.personID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
-		var isDealer = Tables.findOne({tableID: tableID}).isDealer;
+		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
 		var isTurn = false;
 		
 		for (i = 0; i < peopleArr.length; i++){
@@ -248,7 +258,8 @@ Template.displayTable.helpers({
 			}
 		}
 		
-		if (hasDealCards && isTurn && !isDealer) {
+		
+		if (hasDealCards && isTurn && !gameOver) {
 			return true;
 		}
 		else {
@@ -518,17 +529,17 @@ Template.joinTable.events({
 					var nonceArr = [];
 					var hashArr = [];
 					var hash = CryptoJS.SHA256(inputValue).toString();
-					var dexHash = parseInt(hash, 16);
+					var decimalHash = parseInt(hash, 16);
 					
 					
 					for (i = 52; i > 0; i--) {
-						var moddedDexHash = dexHash % i;
-						cardKeyArr.push(moddedDexHash);
+						var moddeddecimalHash = decimalHash % i;
+						cardKeyArr.push(moddeddecimalHash);
 						
 						var nonce = stringGen(24);
 						nonceArr.push(nonce);
 						
-						hashArr.push(CryptoJS.SHA256(moddedDexHash.toString() + nonce.toString()).toString());
+						hashArr.push(CryptoJS.SHA256(moddeddecimalHash.toString() + nonce.toString()).toString());
 					}
 					
 					var personID = stringGen(8);

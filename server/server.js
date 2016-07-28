@@ -253,6 +253,7 @@ Meteor.methods({
 		var isHitting = Tables.findOne({tableID: tableID}).isHitting;
 		
 		
+		//if it's a hit
 		if (isLastPerson && isHitting) {
 			console.log("test");
 			var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
@@ -367,7 +368,7 @@ Meteor.methods({
 							{$set: {"peopleArr": peopleArr}
 		                });
 						break;
-					} 
+					}
 					else {
 						peopleArr[i].isTurn = false;
 						peopleArr[0].isTurn = true;
@@ -396,7 +397,8 @@ Meteor.methods({
             }
         }
     }
-}    },
+}    
+},
     
     
     changeTurn:function (tableID, personID, personKey) { 
@@ -408,6 +410,12 @@ Meteor.methods({
 	
 	    	for (i = 0; i < length; i++){ 
 		    	if (peopleArr[i].isTurn && peopleArr[i].personKey == personKey) {
+			    	if (peopleArr[i].isDealer) {
+				    	Tables.update(
+							{"tableID": tableID}, 
+							{$set: {"gameOver": true}
+						});
+			    	}
 					if (i != length - 1) {
 						peopleArr[i].isTurn = false;
 						peopleArr[i + 1].isTurn = true;
@@ -428,12 +436,12 @@ Meteor.methods({
 									{"tableID": tableID}, {
 									$set: {"isHitting": true, "playerToHit": ID}
                         		});
-                    		}	
+                        		Tables.update(
+									{"tableID": tableID}, {
+									$set: {"isHitting": true, "playerToHit": ID}
+                        		});
+                    		}
 						}
-						Tables.update(
-						{ "tableID": tableID}, 
-							{$set: {"peopleArr": peopleArr, "gameOver" : true}
-		                });
 						break;
 		    		}
 					else {
@@ -452,12 +460,13 @@ Meteor.methods({
 									{"tableID": tableID}, {
 									$set: {"isHitting": true, "playerToHit": ID}
                         		});
-                    		}	
+                    		
+                    		}
 						}
 						Tables.update(
-						{ "tableID": tableID}, 
-							{$set: {"peopleArr": peopleArr, "gameOver" : true}
-		                });
+							{"tableID": tableID}, 
+							{$set: {"peopleArr": peopleArr}
+						});
 						break; 
 		    		}
 		    	}
