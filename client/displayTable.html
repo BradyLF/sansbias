@@ -9,16 +9,17 @@
 				<hr>
 				<button class="submit flat-button deal-cards" type="submit" value="submit"><h3>Deal Cards</h3></button>
 			{{else}}
-			{{/if}}
-			{{#if showPlayerChoices}}
-				<hr>
-				<button class="submit flat-button player-choices hit" type="submit" value="submit"><h3>Hit</h3></button>
-				<button class="submit flat-button player-choices stay" type="submit" value="submit"><h3>Stay</h3></button>
-			{{else}}
+				{{#if showPlayerChoices}}
+					<hr>
+					<button class="submit flat-button player-choices hit" type="submit" value="submit"><h3>Hit</h3></button>
+					<button class="submit flat-button player-choices stay" type="submit" value="submit"><h3>Stay</h3></button>
+				{{else}}
+					<h2>Waiting for your turn...</h2>
+				{{/if}}
 			{{/if}}
 			{{#if gameOver}}
 				<hr>
-				<button class="submit flat-button deal-cards" type="submit" value="submit"><h3>Play Again</h3></button>
+				<button class="submit flat-button next-round" type="submit" value="submit"><h3>Play Again</h3></button>
 			{{else}}
 			{{/if}}
 			<div class="table-info">
@@ -41,6 +42,7 @@
 				{{/each}}
 				{{submitCards}}
 				{{verifyCards}}
+				{{nextRoundRefresh}}
 			</div>
 		</div>
 	</div>

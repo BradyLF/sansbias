@@ -150,6 +150,85 @@ Template.addTable.events({
 //helpers for displaying the table
 Template.displayTable.helpers({
 	
+	nextRoundRefresh: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();	
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;	
+		var refresh = false;	
+				
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].personID == personID) {
+				refresh = peopleArr[i].nextRoundRefresh;
+			}
+		}
+		
+		if (refresh) {
+			function stringGen(len) {
+				var text = "";
+				var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+				for( var i=0; i < len; i++ )
+					text += charset.charAt(Math.floor(Math.random() * charset.length));
+				return text;
+    		}
+			swal({   
+			title: "To Start The Next Round, Input Random Characters",   
+			type: "input", 
+			showCancelButton: false,   
+			closeOnConfirm: false,   
+			animation: "slide-from-top",   
+			inputPlaceholder: "at least 16 characters" }, 
+			function(inputValue){   
+				if (inputValue === false) return false;      
+				if (inputValue === "") {     
+					swal.showInputError("You need to write something!");     
+					return false   }
+				if (inputValue.length < 16) {     
+					swal.showInputError("You need to type at least 16 characters");     
+					return false   }   
+				else {
+					//create arrays
+					var cardKeyArr = [];
+					var nonceArr = [];
+					var hashArr = [];	
+
+					//push each card's info into the array
+					for (i = 52; i > 0; i--) {
+						
+						//get the SHA hash from the input value plus i
+						var hash = CryptoJS.SHA256(inputValue + i.toString()).toString();
+						var decimalHash = parseInt(hash, 16);
+						
+						//mod the hash and put it into the array
+						var moddedDecimalHash = decimalHash % i;
+						cardKeyArr.push(moddedDecimalHash);
+						
+						//generate the nonce and push it into the array
+						var nonce = stringGen(32);
+						nonceArr.push(nonce);
+						
+						//generate the card's hash and push it to the hash array
+						hashArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
+					}
+
+					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
+					
+					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
+					localStorage.setItem("nonceArr-" + personID, nonceArr);
+					localStorage.setItem("hashArr-" + personID, hashArr);
+					localStorage.setItem("deckArr-" + personID, deckArr);
+					
+					Meteor.call("newRoundData", tableID, personID, personKey, hashArr);
+					
+					location.reload();
+			}
+		});
+		}
+	},
+	
 	//display person's name from method call
 	personName: function () {
 		var params =  Router.current().params;	
@@ -476,6 +555,16 @@ Template.displayTable.events({
 		
 	},
 	
+	//a submission event
+	'click .next-round': function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();
+		Meteor.call("playNextRound", tableID, personID, personKey);
+		
+	},
+	
 	
 }); 
     
@@ -525,23 +614,30 @@ Template.joinTable.events({
 					swal.showInputError("You need to type at least 16 characters");     
 					return false   }   
 				else {
+					//create arrays
 					var cardKeyArr = [];
 					var nonceArr = [];
-					var hashArr = [];
-					var hash = CryptoJS.SHA256(inputValue).toString();
-					var decimalHash = parseInt(hash, 16);
-					
-					
+					var hashArr = [];	
+
+					//push each card's info into the array
 					for (i = 52; i > 0; i--) {
-						var moddeddecimalHash = decimalHash % i;
-						cardKeyArr.push(moddeddecimalHash);
 						
-						var nonce = stringGen(24);
+						//get the SHA hash from the input value plus i
+						var hash = CryptoJS.SHA256(inputValue + i.toString()).toString();
+						var decimalHash = parseInt(hash, 16);
+						
+						//mod the hash and put it into the array
+						var moddedDecimalHash = decimalHash % i;
+						cardKeyArr.push(moddedDecimalHash);
+						
+						//generate the nonce and push it into the array
+						var nonce = stringGen(32);
 						nonceArr.push(nonce);
 						
-						hashArr.push(CryptoJS.SHA256(moddeddecimalHash.toString() + nonce.toString()).toString());
+						//generate the card's hash and push it to the hash array
+						hashArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
 					}
-					
+
 					var personID = stringGen(8);
 					var personKey = stringGen(4);
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];

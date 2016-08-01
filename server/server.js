@@ -18,21 +18,6 @@ Meteor.publish("getTable", function (tableID) {
 Meteor.methods({
 	
 ///////////////////////////////////////////////////////////////////////////////////////////
-//miscellaneous methods                                                                  //
-///////////////////////////////////////////////////////////////////////////////////////////
-    
-	//basic string generation function that generates a random alphanumeric string
-    stringGen:function (len) {
-			var text = "";
-			var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-			for( var i=0; i < len; i++ )
-				text += charset.charAt(Math.floor(Math.random() * charset.length));
-			return text;
-    },
-	
-	
-	
-///////////////////////////////////////////////////////////////////////////////////////////
 //methods for the addTable template, which creates a new table based on passed in form data//
 ///////////////////////////////////////////////////////////////////////////////////////////
     
@@ -42,7 +27,6 @@ Meteor.methods({
 	   var handArr = [];
 	   var dealtCards = [];
 	   var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
-	   var handValue = 0;
 	   
 	   var peopleArr = [{
 		   personID: personID,
@@ -52,12 +36,13 @@ Meteor.methods({
 		   cardKeyArr: cardKeyArr,
 		   nonceArr: nonceArr,
 		   handArr: handArr,
-		   handValue: handValue,
+		   handValue: 0,
 		   cardsVerified: 0,
 		   verificationsRequested:0,
 		   cardsRequested: 0,
 		   isDealer: true,
 		   isTurn: true,
+		   nextRoundRefresh: false,
 	   }];
 	   
 	    Tables.insert ({
@@ -80,6 +65,75 @@ Meteor.methods({
 ///////////////////////////////////////////////////////////////////////////////////////////
 //methods for the displayTable template, which retrieves data with an tableID            //
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+	playNextRound:function (tableID, personID, personKey) {
+		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    for (i = 0; i < length; i++){
+		    if (peopleArr[i].personKey == personKey && peopleArr[i].isDealer && gameOver){
+			   var cardKeyArr = [];
+			   var nonceArr = [];
+			   var handArr = [];
+			   var dealtCards = [];
+			   var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
+			   
+			   var dealer = peopleArr[0];
+			   peopleArr.splice(0, 1);
+			   peopleArr.push(dealer);
+			   
+			   for (i = 0; i < length; i++){ 
+				   peopleArr[i].cardKeyArr = cardKeyArr;
+				   peopleArr[i].nonceArr = nonceArr;
+				   peopleArr[i].handArr = handArr;
+				   peopleArr[i].handValue = 0;
+				   peopleArr[i].cardsVerified = 0;
+				   peopleArr[i].isTurn = false;
+				   peopleArr[i].isDealer = false;
+				   peopleArr[i].nextRoundRefresh = true;
+			   }
+			   
+			   peopleArr[0].isTurn = true;
+			   peopleArr[0].isDealer = true;
+
+			   
+			   Tables.update(
+			       { "tableID" : tableID },
+			       { $set: { 
+				       "peopleArr" : peopleArr, 
+				       "isOpen" : false, 
+				       "hasDealCards": false, 
+				       "dealtCards": dealtCards, 
+				       "deckArr": deckArr, 
+				       "isStaying": false,
+					   "isHitting": false,
+					   "playerToHit": null,
+					   "gameOver": false,
+				       } 
+				    }
+		       );
+		    }
+	    }
+	    
+	},
+	
+	newRoundData: function(tableID, personID, personKey, hashArr) {
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    for (i = 0; i < length; i++){
+		    if (peopleArr[i].personKey == personKey){
+			    peopleArr[i].hashArr = hashArr;
+			    peopleArr[i].nextRoundRefresh = false;
+		    }
+		    Tables.update(
+				{ "tableID" : tableID },
+				{ $set: { "peopleArr" : peopleArr} }
+			);
+		}
+	},
+
 
     isDealer:function (tableID, personID) {
 	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
@@ -436,10 +490,6 @@ Meteor.methods({
 									{"tableID": tableID}, {
 									$set: {"isHitting": true, "playerToHit": ID}
                         		});
-                        		Tables.update(
-									{"tableID": tableID}, {
-									$set: {"isHitting": true, "playerToHit": ID}
-                        		});
                     		}
 						}
 						break;
@@ -503,6 +553,7 @@ Meteor.methods({
 				verificationsRequested:0,
 				cardsVerified: 0,
 				isTurn: false,
+				nextRoundRefresh: false,
 			})
 			
 			Tables.update(
