@@ -10,7 +10,7 @@
   			<div style="padding-bottom: 200px;" class="flex-container cards-container">
   			{{#each tableData}}
 			   <div class="flex-item hand">
-			      <h3>{{name}} ({{isDealer}})</h3>
+			      <h3>{{name}} ({{isDealer}})</h3><h4 style="float: right"> {{isTurn}}</h4>
 			      <h3> Score: {{handValue}} | Chips: {{chipCount}} | Bet: {{bet}}</h3>
 			      <hr>
 			      <div style="border: none;" class="flex-container cards-container hand">

@@ -1,6 +1,5 @@
 /*******************************************/
 /* Fonts!                                  */
-/*******************************************/
 
 
 /** Ultra Light */
@@ -45,12 +44,13 @@
   src: url("https://applesocial.s3.amazonaws.com/assets/styles/fonts/sanfrancisco/sanfranciscodisplay-bold-webfont.woff");
 }
 
+
 /*******************************************/
 /* Body, index, and Site-Wide Styling      */
 /*******************************************/
 
 html, body {
-	font-family: 'San Francisco', sans-serif;
+	font-family: 'Arial', sans-serif;
 	background-color: #004600;
 	background: url(images/felt.png) repeat center center; 
 	font-weight: 500;

@@ -45,7 +45,7 @@ Router.route('/table/:tableID/:personID/:personKey', function () {
     //subscribe to public table info
     Meteor.subscribe("getTable", tableID);
     
-	//display submission option if they haven't submitted already
+	//display deal cards option if they haven't submitted already
 	Meteor.call('isDealer', tableID, personID, function (err, showDeal) {
         if (showDeal) {
             Session.set('showDeal',true);
@@ -68,7 +68,7 @@ Template.addTable.events({
 	
 	//a submission event
 	'click .submit': function () {
-		
+		//random alphanumeric sting generator
 		function stringGen(len) {
 			var text = "";
 			var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -123,16 +123,19 @@ Template.addTable.events({
 						hashArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
 					}
 
+					//create tableID, personID, personKey, and deck Array
 					var tableID = stringGen(16);
 					var personID = stringGen(8);
 					var personKey = stringGen(4);
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
+					//locally store all arrays
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
 					localStorage.setItem("deckArr-" + personID, deckArr);
 					
+					//make the new table and redirect to it
 					Meteor.call("makeNewRoom", tableID, personID, personKey, tableAdmin, hashArr);
 					window.location.href = '/table/' + tableID + "/" + personID + "/" + personKey;
 					
@@ -150,17 +153,21 @@ Template.addTable.events({
 //helpers for displaying the table
 Template.displayTable.helpers({
 	
+	//request the user's bet for the round
 	getBet: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();	
 		
+		//get the people array
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var length = peopleArr.length;	
+		
+		//use peopleArray to get the waiting for bet status and chip count
 		var waitingForBet = false;	
-		var chipCount = 0;
-				
+		var chipCount = 0;	
 		for (i = 0; i <length; i++) {
 			if (peopleArr[i].personID == personID) {
 				waitingForBet = peopleArr[i].waitingForBet;
@@ -168,6 +175,7 @@ Template.displayTable.helpers({
 			}
 		}
 		
+		//if they are waiting for a bet
 		if (waitingForBet) {
 			swal({   
 			title: "How much would you like to bet out of " +  chipCount + " chips?",   
@@ -176,7 +184,8 @@ Template.displayTable.helpers({
 			closeOnConfirm: false,   
 			animation: "slide-from-top",   
 			inputPlaceholder: "chips" }, 
-			function(inputValue){   
+			function(inputValue){  
+				//null and non-number protections 
 				if (inputValue === false) return false;      
 				if (inputValue === "") {     
 					swal.showInputError("You need to write something!");     
@@ -195,34 +204,38 @@ Template.displayTable.helpers({
 					swal.showInputError("You cannot bet negative chips");     
 					return false   
 				}
-				
+				//submit the bet and reload if all it good
 				else {					
-					Meteor.call("submitBet", tableID, personID, personKey, inputValue);
-					
+					Meteor.call("submitBet", tableID, personID, personKey, inputValue);	
 					location.reload();
 			}
 		});
 		}
 	},
 	
-	
+	//get new data for the next round
 	nextRoundRefresh: function () {
+		//get parameters from the url
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();	
 		
+		//get people array and length
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var length = peopleArr.length;	
-		var refresh = false;	
 				
+		//use people array to check if new info is being requested
+		var refresh = false;	
 		for (i = 0; i <length; i++) {
 			if (peopleArr[i].personID == personID) {
 				refresh = peopleArr[i].nextRoundRefresh;
 			}
 		}
 		
+		//if the server is asking for a refresh, ask for needed info
 		if (refresh) {
+			//random string generator
 			function stringGen(len) {
 				var text = "";
 				var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -237,7 +250,8 @@ Template.displayTable.helpers({
 			closeOnConfirm: false,   
 			animation: "slide-from-top",   
 			inputPlaceholder: "at least 16 characters" }, 
-			function(inputValue){   
+			function(inputValue){ 
+				//null protections  
 				if (inputValue === false) return false;      
 				if (inputValue === "") {     
 					swal.showInputError("You need to write something!");     
@@ -272,20 +286,21 @@ Template.displayTable.helpers({
 
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
+					//locally store items
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
 					localStorage.setItem("deckArr-" + personID, deckArr);
 					
+					//remove the gathered hashes, as they've changed now
 					for (x = 0; x < peopleArr.length; x++) {
-						var gatheredHashes = [];
-								
+						var gatheredHashes = [];	
 						localStorage.removeItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID);
-
 					}
 					
+					//submit the new round data
 					Meteor.call("newRoundData", tableID, personID, personKey, hashArr);
-					
+					//reload
 					location.reload();
 			}
 		});
@@ -308,7 +323,7 @@ Template.displayTable.helpers({
 		}
 	},
 	
-	//display person's name from method call
+	//display dealer's name from method call
 	dealerName: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -324,56 +339,44 @@ Template.displayTable.helpers({
 		}
 	},
 	
-	//display person's name from method call
-	isNotDealer: function () {
-		var params =  Router.current().params;	
-		var tableID = params.tableID.toString();
-		var personID = params.personID.toString();
-				
-		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-		var length = peopleArr.length;		
-				
-		for (i = 0; i <length; i++) {
-			if (peopleArr[i].personID == personID && peopleArr[i].isDealer == false) {
-				return true;
-			}
-		}
-		return false;
-	},
-	
 	//display tableCode from method call
 	tableCode: function () {
 		var params =  Router.current().params;	
 		return params.tableID.toString();
 	},
 	
-	//display tableCode from method call
+	//display the winner as well as request chips from method call
 	winner: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
 		
+		//see if the game is over
 		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
 		
+		//if it is, check for the winner
 		if (gameOver) {
-		    Meteor.call("checkWinner", tableID, personID, personKey);		
+			//tell the server to check for the winner and take/give chips
+		    Meteor.call("checkWinner", tableID, personID, personKey);
+		    
+		    //get people array		
 			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 			var length = peopleArr.length;	
 		
+			//use people arr to get dealer's hand value
 			var dealerHandValue = 0;
 			for (i = 0; i <length; i++) {
 				if (peopleArr[i].isDealer) {
 					dealerHandValue = peopleArr[i].handValue;
 				}
 			}
-		
 			for (i = 0; i < length; i++) {
 				if (peopleArr[i].personID == personID) {
-					
+					//if the client is the dealer, tell them how many people they beat
 					if (peopleArr[i].isDealer) {
 						var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-
 						var dealerWinCount = 0;
 						for (x = 0; x < length; x++) {
 							if (dealerHandValue < 22 && peopleArr[x].handValue > 21) {
@@ -383,16 +386,17 @@ Template.displayTable.helpers({
 								dealerWinCount++
 							}
 						}
+						//grammar!
 						if (dealerWinCount == 1) {
 							var response = "You beat " + dealerWinCount + " player";
 						}
 						else {
 							var response = "You beat " + dealerWinCount + " players";
 						}
-						return response;
-							
+						//return winner statement
+						return response;		
 					}
-					
+					//if the person is not the dealer
 					else {
 						if (dealerHandValue > 21 && peopleArr[i].handValue > 21) {
 							var response = "You and the Dealer both busted!";
@@ -419,53 +423,15 @@ Template.displayTable.helpers({
 			} 
 		}		
 	},
-	
-	myHandArr: function () {
-		var params =  Router.current().params;	
-		var tableID = params.tableID.toString();
-		var personID = params.personID.toString();
 		
-		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-		var length = peopleArr.length;
-			
-		for (i = 0; i <length; i++) {
-			if (peopleArr[i].personID == personID) {
-				if (peopleArr[i].handArr.length == 0) {
-					return ["Waiting..."];
-				}
-				return peopleArr[i].handArr;
-			}
-		} 
-	},
-	
-	dealerHandArr: function () {
-		var params =  Router.current().params;	
-		var tableID = params.tableID.toString();
-		var personID = params.personID.toString();
-		
-		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-		var length = peopleArr.length;
-			
-		for (i = 0; i <length; i++) {
-			if (peopleArr[i].isDealer) {
-				if (peopleArr[i].handArr.length == 0) {
-					return ["Waiting..."];
-				}
-				if (peopleArr[i].handArr.length == 1) {
-					peopleArr[i].handArr.push("?");
-				}
-				return peopleArr[i].handArr;
-			}
-		} 
-	},
-	
-	//display tableCode from method call
+	//display all table data
 	tableData: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		
+		//replace some items to make sense to user
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].isDealer){
 				if (peopleArr[i].handArr.length == 1) {
@@ -477,7 +443,7 @@ Template.displayTable.helpers({
 				peopleArr[i].isDealer = "Player";
 			}
 			if (peopleArr[i].handValue > 21){
-				peopleArr[i].handValue = "Bust!";
+				peopleArr[i].handValue = "Bust";
 			}
 			if (peopleArr[i].cardKeyArr.length == 0){
 				peopleArr[i].cardKeyArr.push("Waiting...");
@@ -485,6 +451,12 @@ Template.displayTable.helpers({
 			if (peopleArr[i].handArr.length == 0){
 				peopleArr[i].handArr.push("Waiting...");
 				peopleArr[i].handArrLength = 0;
+			}
+			if (peopleArr[i].isTurn){
+				peopleArr[i].isTurn = "Waiting...";
+			}
+			if (!peopleArr[i].isTurn){
+				peopleArr[i].isTurn = "";
 			}
 			else {
 				var handArrLength = peopleArr[i].handArr.length;
@@ -515,36 +487,37 @@ Template.displayTable.helpers({
 		return peopleArr;
 	},
 	
+	//get table size from method call
 	tableSize: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		
 		return Tables.findOne({tableID: tableID}).tableSize;
 	},
-	
+	//show the winner if the game is over
 	showWinner: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		
 		return Tables.findOne({tableID: tableID}).gameOver;
 	},
-	
+	//show deal option if there are people in the room
 	showDeal: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		
+		//make sure no one still needs to submit new round data
 		var nextRoundRefresh = false 
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].nextRoundRefresh == true) {
 				nextRoundRefresh = true;
 			}
 		}
-		
-
-		
+		//if conditions are met, show the deal option
 		if (peopleArr.length > 1 && !hasDealCards && !nextRoundRefresh) {
 			return Session.get('showDeal');
 		}
@@ -552,17 +525,20 @@ Template.displayTable.helpers({
 			return false;
 		}
 	},
-	
+	//show the choice to hit if apropriate
 	showHitChoice: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
+		
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
 		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
+		
+		//check if it is the person's turn and if they have bust
 		var isTurn = false;
 		var hasBust = false
-		
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].personID == personID){
 				isTurn = peopleArr[i].isTurn;
@@ -573,7 +549,7 @@ Template.displayTable.helpers({
 			}
 		}
 		
-		
+		//if all is good, show hit option
 		if (hasDealCards && isTurn && !gameOver && !hasBust) {
 			return true;
 		}
@@ -582,22 +558,23 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//show the choice to stay if apropriate
 	showStayChoice: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
 		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
+		//check if it the person's turn
 		var isTurn = false;
-		
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].personID == personID){
 				isTurn = peopleArr[i].isTurn;
 			}
 		}
-		
-		
+		//if all is good, show the stay choice
 		if (hasDealCards && isTurn && !gameOver) {
 			return true;
 		}
@@ -606,12 +583,14 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//check to see if the game is over
 	gameOver: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		
+		//only show the game is over if they are the dealer too
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].personID == personID){
 				isDealer = peopleArr[i].isDealer;
@@ -621,6 +600,7 @@ Template.displayTable.helpers({
 		return Tables.findOne({tableID: tableID}).gameOver && isDealer;		
 	},
 	
+	//show number of nonces
 	nonceArrLength: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -635,6 +615,7 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//show number of card keys
 	cardKeyArrLength: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -649,6 +630,7 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//show number of hashes
 	hashArrLength: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -663,6 +645,7 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//submit cards to the server
 	submitCards: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -685,36 +668,40 @@ Template.displayTable.helpers({
 		if (cardsRequested > 0){
 			//get the hashed is you haven't already
 			for (x = 0; x < peopleArr.length; x++) {
+				//push the gathered hash into the array
 				var gatheredHashes = [];
-				
 				for (j = 0; j < peopleArr[x].hashArr.length; j++){
 					gatheredHashes.push(peopleArr[x].hashArr[j])
 				}
-				
+				//if nothing is there already, then locally store it
 				if (localStorage.getItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID) == null) {
 					localStorage.setItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID, gatheredHashes);
 				}
-				console.log("test");
 			}
 			
 			var tableID = params.tableID.toString();
 			var personID = params.personID.toString();
 			
+			//get the card key array
 			var cardKeyArrString = localStorage.getItem("cardKeyArr-"+personID);
 			var cardKeyArr = cardKeyArrString.split(",");
 			
+			//get the nonce array
 			var nonceArrString = localStorage.getItem("nonceArr-"+personID);
 			var nonceArr = nonceArrString.split(",");
-						
+					
+			//splice the card and nonce arrays to only the cards requested
 			cardKeyArr = cardKeyArr.slice(cardKeyArrLength, cardKeyArrLength + cardsRequested);
 			nonceArr = nonceArr.slice(cardKeyArrLength, cardKeyArrLength + cardsRequested);
 			
-			
+			//send the cards to the server
 			Meteor.call("submitCards", tableID, personID, cardKeyArr, nonceArr);
 		}
 	},
 	
+	//verify cards 
 	verifyCards: function () {
+		//get parameters
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
@@ -722,7 +709,8 @@ Template.displayTable.helpers({
 			
 		var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-		//get the cards requested
+		
+		//get the verifications requested
 		var cardKeyArrLength = 0;
 		var verificationsRequested = 0;
 		for (i = 0; i < peopleArr.length; i++){
@@ -734,19 +722,25 @@ Template.displayTable.helpers({
 			}
 		}
 		
-		
 		//if there are cards requested
 		if (verificationsRequested > 0){
+			
 			var verificationCount = 0;
 			var allVerified = true;
 			for (i = verificationsRequested; i > 0; i--) {
+				//get the deck from local storage
 				var deckArrString = localStorage.getItem("deckArr-"+personID);
 				var deckArr = deckArrString.split(",");	
 				var total = 0;
+				
+				//add all the card keys submitted by users together
 				for (x = 0; x < peopleArr.length; x++) {
 					total = total + parseInt(peopleArr[x].cardKeyArr[peopleArr[x].cardKeyArr.length - i]);
 				}
+				
+				//verify that the deck size mod total does result in the card dealt
 				if (deckArr[total % deckArr.length] == dealtCards[dealtCards.length - i]) {
+					//remove that card from the deck
 					deckArr.splice(total % deckArr.length, 1);
 					localStorage.setItem("deckArr-"+personID, deckArr);
 					console.log("card verified");
@@ -756,12 +750,14 @@ Template.displayTable.helpers({
 					allVerified = false
 				}
 			}
-			
+			//verify that all the cards submitted were valid from the beginning
 			for (x = 0; x < peopleArr.length; x++) {
 				for (j= 0; j< peopleArr[x].cardKeyArr.length; j++) {
-				var gatheredHashesString = localStorage.getItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID);
-				var gatheredHashes = gatheredHashesString.split(",");	
-				var calculatedHash = CryptoJS.SHA256(peopleArr[x].cardKeyArr[j].toString() + peopleArr[x].nonceArr[j].toString()).toString();
+					//get the gathered hashes from storage
+					var gatheredHashesString = localStorage.getItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID);
+					var gatheredHashes = gatheredHashesString.split(",");	
+					//verify the hash
+					var calculatedHash = CryptoJS.SHA256(peopleArr[x].cardKeyArr[j].toString() + peopleArr[x].nonceArr[j].toString()).toString();
 					if (gatheredHashes[j] == calculatedHash){
 						console.log("hash verified");
 					}
@@ -770,6 +766,7 @@ Template.displayTable.helpers({
 					}
 				}
 			}
+			//if everything is verified, send the verification to the server
 			if (allVerified) {
 				Meteor.call("sendVerifications", tableID, personID, personKey, verificationCount);
 			}
@@ -781,58 +778,49 @@ Template.displayTable.helpers({
     
 //events for displayTable
 Template.displayTable.events({	
-	//a submission event
+	//click the deal cards button
 	'click .deal-cards': function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
+		//tell the server to request the deal cards
 		if (!hasDealCards) {
 			Meteor.call("requestDealCards", tableID, personID, personKey);
 		}
 		
 	},
 	
+	//click the hit button
 	'click .hit': function () {
-		
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
-		
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
-		
-		
-
-		var handValue = 0;
-		for (i = 0; i < peopleArr.length; i++){
-			if (peopleArr[i].personID == personID){
-				handValue == peopleArr[i].handValue;
-			}
-		}	
-		
+		//tell the server to request the cards for a hit
 		Meteor.call("requestHitCards", tableID, personID, personKey);
-		
-
 	},
 	
+	//click the stay button
 	'click .stay': function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
-		
+		//tell the server to change turn
 		Meteor.call("changeTurn", tableID, personID, personKey);
 		
 	},
 	
-	//a submission event
+	//a next round event
 	'click .next-round': function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
+		//tell the server to start the next round
 		Meteor.call("playNextRound", tableID, personID, personKey);
 		
 	},
@@ -909,16 +897,19 @@ Template.joinTable.events({
 						//generate the card's hash and push it to the hash array
 						hashArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
 					}
-
+					
+					//generate ID's
 					var personID = stringGen(8);
 					var personKey = stringGen(4);
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
+					//locally store arrays
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
 					localStorage.setItem("deckArr-" + personID, deckArr);
 					
+					//add the new player
 					Meteor.call("addNewPlayer", tableID, personID, personKey, memberName, hashArr);
 					window.location.href = '/table/' + tableID + "/" + personID + "/" + personKey;
 			}
