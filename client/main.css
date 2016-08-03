@@ -408,18 +408,15 @@ input {
 .info {
 	width: auto !important;
 	height: auto !important;
-	color: #333 !important;
-	background-color: #fff !important;
-	border: none;
+	color: #fff !important;
+	background-color: #333 !important;
 	font-size: medium;
 	text-align: right;
 	float: right;
-	margin-top: 5px !important;
-	padding: 0px !important;
-	padding-left: 8px !important;
-	padding-right: 8px !important;
+	padding: 10px !important;
 	border-radius: 1px !important;
-	border: 1px solid #fff !important;
+	border: none;
+	margin-top: -5px;
 }
 
 .card {

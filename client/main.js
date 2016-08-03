@@ -190,6 +190,12 @@ Template.displayTable.helpers({
 					swal.showInputError("You don't have that many chips!");     
 					return false   
 				}
+				
+				if (!isNaN(inputValue) && inputValue < 0){
+					swal.showInputError("You cannot bet negative chips");     
+					return false   
+				}
+				
 				else {					
 					Meteor.call("submitBet", tableID, personID, personKey, inputValue);
 					

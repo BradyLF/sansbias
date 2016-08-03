@@ -2,7 +2,7 @@
 <template name="displayTable">
 	<div class="animated fadeIn content">
 		<div id="tableInfo">
-			<h3 class="title" id="manage-title">Welcome {{personName}} | Table Code: {{tableCode}}</h3>
+			<h3 class="title" id="manage-title">Welcome {{personName}} | Table Code: {{tableCode}} <button onclick="toggle_visibility('table-info');" class="info">info</button></h3>
 			{{#if showWinner}}
 				<h2 class="title">{{winner}}</h2>
 			{{else}}
@@ -10,7 +10,7 @@
   			<div style="padding-bottom: 200px;" class="flex-container cards-container">
   			{{#each tableData}}
 			   <div class="flex-item hand">
-			      <h3>{{name}} ({{isDealer}}) <button onclick="toggle_visibility('table-info');" class="info">info</button></h3>
+			      <h3>{{name}} ({{isDealer}})</h3>
 			      <h3> Score: {{handValue}} | Chips: {{chipCount}} | Bet: {{bet}}</h3>
 			      <hr>
 			      <div style="border: none;" class="flex-container cards-container hand">
@@ -46,7 +46,7 @@
 			{{/if}}
 			{{#if gameOver}}
 				<div class="button-tab">
-					<button class="submit flat-button next-round" type="submit" value="submit"><h3>Play Again</h3></button>
+					<button class="submit flat-button next-round" type="submit" value="submit"><h3>Play Next Hand</h3></button>
 				</div>
 			{{else}}
 			{{/if}}
