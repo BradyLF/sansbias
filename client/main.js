@@ -150,6 +150,56 @@ Template.addTable.events({
 //helpers for displaying the table
 Template.displayTable.helpers({
 	
+	getBet: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();	
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;	
+		var waitingForBet = false;	
+		var chipCount = 0;
+				
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].personID == personID) {
+				waitingForBet = peopleArr[i].waitingForBet;
+				chipCount = peopleArr[i].chipCount;
+			}
+		}
+		
+		if (waitingForBet) {
+			swal({   
+			title: "How much would you like to bet out of " +  chipCount + " chips?",   
+			type: "input", 
+			showCancelButton: false,   
+			closeOnConfirm: false,   
+			animation: "slide-from-top",   
+			inputPlaceholder: "chips" }, 
+			function(inputValue){   
+				if (inputValue === false) return false;      
+				if (inputValue === "") {     
+					swal.showInputError("You need to write something!");     
+					return false   
+				} 
+				if (isNaN(inputValue)){
+					swal.showInputError("You need to type a number");     
+					return false   
+				} 
+				if (!isNaN(inputValue) && inputValue > chipCount){
+					swal.showInputError("You don't have that many chips!");     
+					return false   
+				}
+				else {					
+					Meteor.call("submitBet", tableID, personID, personKey, inputValue);
+					
+					location.reload();
+			}
+		});
+		}
+	},
+	
+	
 	nextRoundRefresh: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
@@ -296,10 +346,12 @@ Template.displayTable.helpers({
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
+		var personKey = params.personKey.toString();
 		
 		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
 		
 		if (gameOver) {
+		    Meteor.call("checkWinner", tableID, personID, personKey);		
 			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 			var length = peopleArr.length;	
 		
@@ -353,13 +405,13 @@ Template.displayTable.helpers({
 							return response;
 						}
 						else {
-							var response = "You win with a score of" + peopleArr[i].handValue;
+							var response = "You win with a score of " + peopleArr[i].handValue;
 							return response;
 						}
 					}
 				}
 			} 
-		}
+		}		
 	},
 	
 	myHandArr: function () {
@@ -675,7 +727,6 @@ Template.displayTable.helpers({
 				}
 			}
 		}
-		
 		
 		
 		//if there are cards requested

@@ -45,6 +45,9 @@ Meteor.methods({
 		   isDealer: true,
 		   isTurn: true,
 		   nextRoundRefresh: false,
+		   chipCount: 10000,
+		   waitingForBet: false,
+		   bet: 0,
 	   }];
 	   
 	    Tables.insert ({
@@ -94,8 +97,10 @@ Meteor.methods({
 				   peopleArr[i].isTurn = false;
 				   peopleArr[i].isDealer = false;
 				   peopleArr[i].nextRoundRefresh = true;
+				   peopleArr[i].waitingForBet = true;
 			   }
 			   
+			   peopleArr[0].waitingForBet = false;
 			   peopleArr[0].isTurn = true;
 			   peopleArr[0].isDealer = true;
 
@@ -366,6 +371,95 @@ Meteor.methods({
 		}
     },
     
+    submitBet:function (tableID, personID, personKey, inputValue) { 
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+	    var length = peopleArr.length;
+	    
+	    for (i = 0; i < length; i++){
+		    if (peopleArr[i].personKey == personKey){
+			    peopleArr[i].chipCount = peopleArr[i].chipCount - inputValue;
+			    peopleArr[i].bet = inputValue;
+			    peopleArr[i].waitingForBet = false;
+			    Tables.update(
+					{ "tableID" : tableID },
+					{ $set: { "peopleArr" : peopleArr} }
+				);
+		    }
+		}
+    },
+    
+    
+    checkWinner:function (tableID, personID, personKey) {
+	    var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;	
+		
+		var dealerHandValue = 0;
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].isDealer) {
+				dealerHandValue = peopleArr[i].handValue;
+			}
+		}
+		
+		for (i = 0; i < length; i++) {
+			if (peopleArr[i].personID == personID) {
+				
+				if (peopleArr[i].isDealer) {
+					var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+					var dealerWinCount = 0;
+					for (x = 0; x < length; x++) {
+						if (dealerHandValue < 22 && peopleArr[x].handValue > 21) {
+							dealerWinCount++
+						}
+						if (dealerHandValue < 22 && dealerHandValue > peopleArr[x].handValue) {
+							dealerWinCount++
+						}
+					}
+					if (dealerWinCount == 1) {
+						var response = "You beat " + dealerWinCount + " player";
+					}
+					else {
+						var response = "You beat " + dealerWinCount + " players";
+					}
+					return response;
+						
+				}
+				
+				else {
+					var response = "test";
+					if (dealerHandValue > 21 && peopleArr[i].handValue > 21) {
+						response = "You and the Dealer both busted!";
+						peopleArr[i].chipCount = peopleArr[i].chipCount + peopleArr[i].bet	
+						peopleArr[i].bet = 0;			
+					}
+					else if (dealerHandValue > 21 && peopleArr[i].handValue < 22) {
+						response = "You win with a score of " + peopleArr[i].handValue;		
+						peopleArr[i].chipCount = peopleArr[i].chipCount + (peopleArr[i].bet*2)
+						peopleArr[i].bet = 0;			
+					}
+					else if (dealerHandValue < 22 && peopleArr[i].handValue > 21) {
+						response = "Dealer wins with a score of " + dealerHandValue;
+						peopleArr[i].bet = 0;			
+					}
+					else if (dealerHandValue > peopleArr[i].handValue) {
+						response = "Dealer wins with a score of " + dealerHandValue;
+						peopleArr[i].bet = 0;			
+					}
+					else {
+						response = "You win with a score of " + peopleArr[i].handValue;
+						peopleArr[i].chipCount = peopleArr[i].chipCount + (peopleArr[i].bet*2)	
+						peopleArr[i].bet = 0;			
+		
+					}
+				Tables.update(
+			       { "tableID" : tableID },
+				   { $set: { "peopleArr" : peopleArr} }
+				);
+				return response;
+				}
+			} 
+		}
+    },
+
     
     
     sendVerifications:function (tableID, personID, personKey, verificationCount) {
@@ -567,6 +661,9 @@ Meteor.methods({
 				cardsVerified: 0,
 				isTurn: false,
 				nextRoundRefresh: false,
+				chipCount: 10000,
+				waitingForBet: true,
+				bet: 0,
 			})
 			
 			Tables.update(
