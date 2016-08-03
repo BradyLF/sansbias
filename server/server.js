@@ -10,7 +10,9 @@ Tables = new Meteor.Collection('tables');
 
 //publish public table info based on tableID
 Meteor.publish("getTable", function (tableID) {
-	return Tables.find({tableID: tableID});
+	return Tables.find({tableID: tableID}, {fields: {
+		    "peopleArr.personKey": 0,
+	    }});
 });
 
 
@@ -254,7 +256,16 @@ Meteor.methods({
 					}
 					peopleArr[i].handArr.push(deckArr[total % deckArr.length])
 					dealtCards.push(deckArr[total % deckArr.length]);
-					if (isNaN(deckArr[total % deckArr.length])){
+					
+					if (deckArr[total % deckArr.length] == "A"){
+						if (peopleArr[i].handValue == 11 && peopleArr[i].handArr.length == 1) {
+							peopleArr[i].handValue = peopleArr[i].handValue + 1;
+						}
+						else {
+							peopleArr[i].handValue = peopleArr[i].handValue + 11;
+						}
+					}
+					else if (isNaN(deckArr[total % deckArr.length])){
 						peopleArr[i].handValue = peopleArr[i].handValue + 10;
 					}
 					else {
@@ -277,7 +288,10 @@ Meteor.methods({
 						}
 						peopleArr[i].handArr.push(deckArr[total % deckArr.length])
 						dealtCards.push(deckArr[total % deckArr.length]);
-						if (isNaN(deckArr[total % deckArr.length])){
+						if (deckArr[total % deckArr.length] == "A"){
+							peopleArr[i].handValue = peopleArr[i].handValue + 11;
+						}
+						else if (isNaN(deckArr[total % deckArr.length])){
 							peopleArr[i].handValue = peopleArr[i].handValue + 10;
 						}
 						else {
@@ -309,7 +323,6 @@ Meteor.methods({
 		
 		//if it's a hit
 		if (isLastPerson && isHitting) {
-			console.log("test");
 			var dealtCards = Tables.findOne({tableID: tableID}).dealtCards;
 			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 			

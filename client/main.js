@@ -221,6 +221,13 @@ Template.displayTable.helpers({
 					localStorage.setItem("hashArr-" + personID, hashArr);
 					localStorage.setItem("deckArr-" + personID, deckArr);
 					
+					for (x = 0; x < peopleArr.length; x++) {
+						var gatheredHashes = [];
+								
+						localStorage.removeItem("gatheredHashes-"+tableID+"-"+peopleArr[x].personID);
+
+					}
+					
 					Meteor.call("newRoundData", tableID, personID, personKey, hashArr);
 					
 					location.reload();
@@ -245,10 +252,153 @@ Template.displayTable.helpers({
 		}
 	},
 	
+	//display person's name from method call
+	dealerName: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+				
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;		
+				
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].isDealer) {
+				return peopleArr[i].name.toString();
+			}
+		}
+	},
+	
+	//display person's name from method call
+	isNotDealer: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+				
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;		
+				
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].personID == personID && peopleArr[i].isDealer == false) {
+				return true;
+			}
+		}
+		return false;
+	},
+	
 	//display tableCode from method call
 	tableCode: function () {
 		var params =  Router.current().params;	
 		return params.tableID.toString();
+	},
+	
+	//display tableCode from method call
+	winner: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
+		
+		if (gameOver) {
+			var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+			var length = peopleArr.length;	
+		
+			var dealerHandValue = 0;
+			for (i = 0; i <length; i++) {
+				if (peopleArr[i].isDealer) {
+					dealerHandValue = peopleArr[i].handValue;
+				}
+			}
+		
+			for (i = 0; i < length; i++) {
+				if (peopleArr[i].personID == personID) {
+					
+					if (peopleArr[i].isDealer) {
+						var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+
+						var dealerWinCount = 0;
+						for (x = 0; x < length; x++) {
+							if (dealerHandValue < 22 && peopleArr[x].handValue > 21) {
+								dealerWinCount++
+							}
+							if (dealerHandValue < 22 && dealerHandValue > peopleArr[x].handValue) {
+								dealerWinCount++
+							}
+						}
+						if (dealerWinCount == 1) {
+							var response = "You beat " + dealerWinCount + " player";
+						}
+						else {
+							var response = "You beat " + dealerWinCount + " players";
+						}
+						return response;
+							
+					}
+					
+					else {
+						if (dealerHandValue > 21 && peopleArr[i].handValue > 21) {
+							var response = "You and the Dealer both busted!";
+							return response;
+						}
+						else if (dealerHandValue > 21 && peopleArr[i].handValue < 22) {
+							var response = "You win with a score of " + peopleArr[i].handValue;							
+							return response;
+						}
+						else if (dealerHandValue < 22 && peopleArr[i].handValue > 21) {
+							var response = "Dealer wins with a score of " + dealerHandValue;
+							return response;
+						}
+						else if (dealerHandValue > peopleArr[i].handValue) {
+							var response = "Dealer wins with a score of " + dealerHandValue;
+							return response;
+						}
+						else {
+							var response = "You win with a score of" + peopleArr[i].handValue;
+							return response;
+						}
+					}
+				}
+			} 
+		}
+	},
+	
+	myHandArr: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;
+			
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].personID == personID) {
+				if (peopleArr[i].handArr.length == 0) {
+					return ["Waiting..."];
+				}
+				return peopleArr[i].handArr;
+			}
+		} 
+	},
+	
+	dealerHandArr: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var length = peopleArr.length;
+			
+		for (i = 0; i <length; i++) {
+			if (peopleArr[i].isDealer) {
+				if (peopleArr[i].handArr.length == 0) {
+					return ["Waiting..."];
+				}
+				if (peopleArr[i].handArr.length == 1) {
+					peopleArr[i].handArr.push("?");
+				}
+				return peopleArr[i].handArr;
+			}
+		} 
 	},
 	
 	//display tableCode from method call
@@ -260,16 +410,22 @@ Template.displayTable.helpers({
 		
 		for (i = 0; i < peopleArr.length; i++){
 			if (peopleArr[i].isDealer){
+				if (peopleArr[i].handArr.length == 1) {
+					peopleArr[i].handArr.push("?");
+				}
 				peopleArr[i].isDealer = "Dealer";
 			}
 			if (peopleArr[i].isDealer == false){
 				peopleArr[i].isDealer = "Player";
 			}
+			if (peopleArr[i].handValue > 21){
+				peopleArr[i].handValue = "Bust!";
+			}
 			if (peopleArr[i].cardKeyArr.length == 0){
-				peopleArr[i].cardKeyArr.push("No Cards Yet");
+				peopleArr[i].cardKeyArr.push("Waiting...");
 			}
 			if (peopleArr[i].handArr.length == 0){
-				peopleArr[i].handArr.push("No Cards Yet");
+				peopleArr[i].handArr.push("Waiting...");
 				peopleArr[i].handArrLength = 0;
 			}
 			else {
@@ -308,13 +464,30 @@ Template.displayTable.helpers({
 		return Tables.findOne({tableID: tableID}).tableSize;
 	},
 	
+	showWinner: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		
+		return Tables.findOne({tableID: tableID}).gameOver;
+	},
+	
 	showDeal: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
 		
-		if (peopleArr.length > 1 && !hasDealCards) {
+		var nextRoundRefresh = false 
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].nextRoundRefresh == true) {
+				nextRoundRefresh = true;
+			}
+		}
+		
+
+		
+		if (peopleArr.length > 1 && !hasDealCards && !nextRoundRefresh) {
 			return Session.get('showDeal');
 		}
 		else {
@@ -322,7 +495,36 @@ Template.displayTable.helpers({
 		}
 	},
 	
-	showPlayerChoices: function () {
+	showHitChoice: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		var hasDealCards = Tables.findOne({tableID: tableID}).hasDealCards;
+		var gameOver = Tables.findOne({tableID: tableID}).gameOver;
+		var isTurn = false;
+		var hasBust = false
+		
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				isTurn = peopleArr[i].isTurn;
+				
+				if (peopleArr[i].handValue > 21) {
+					hasBust = true;
+				}
+			}
+		}
+		
+		
+		if (hasDealCards && isTurn && !gameOver && !hasBust) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	},
+	
+	showStayChoice: function () {
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
@@ -536,13 +738,26 @@ Template.displayTable.events({
 	},
 	
 	'click .hit': function () {
+		
 		var params =  Router.current().params;	
 		var tableID = params.tableID.toString();
 		var personID = params.personID.toString();
 		var personKey = params.personKey.toString();
 		
+		var peopleArr = Tables.findOne({tableID: tableID}).peopleArr;
+		
+		
+
+		var handValue = 0;
+		for (i = 0; i < peopleArr.length; i++){
+			if (peopleArr[i].personID == personID){
+				handValue == peopleArr[i].handValue;
+			}
+		}	
+		
 		Meteor.call("requestHitCards", tableID, personID, personKey);
 		
+
 	},
 	
 	'click .stay': function () {

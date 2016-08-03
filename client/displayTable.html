@@ -1,29 +1,56 @@
 <!-- display template-->
 <template name="displayTable">
 	<div class="animated fadeIn content">
-		<h1 class="title">Welcome {{personName}}</h1>
-		<hr style="width: 80%;" class="animated zoomIn">
 		<div id="tableInfo">
-			<h3 class="title" id="manage-title">Table Code: {{tableCode}}</h3>
-			{{#if showDeal}}
-				<hr>
-				<button class="submit flat-button deal-cards" type="submit" value="submit"><h3>Deal Cards</h3></button>
+			<h3 class="title" id="manage-title">Welcome {{personName}} | Table Code: {{tableCode}}</h3>
+			{{#if showWinner}}
+				<h2 class="title">{{winner}}</h2>
 			{{else}}
-				{{#if showPlayerChoices}}
-					<hr>
-					<button class="submit flat-button player-choices hit" type="submit" value="submit"><h3>Hit</h3></button>
-					<button class="submit flat-button player-choices stay" type="submit" value="submit"><h3>Stay</h3></button>
+			{{/if}}	  			
+  			<div style="padding-bottom: 200px;" class="flex-container cards-container">
+  			{{#each tableData}}
+			   <div class="flex-item hand">
+			      <h3>{{name}}'s Hand  ({{isDealer}} — {{handValue}}) <button onclick="toggle_visibility('table-info');" class="info">info</button></h3>
+			      <hr>
+			      <div style="border: none;" class="flex-container cards-container hand">
+			         {{#each handArr}}
+			         <div class="flex-item card">
+			            <p> {{this}}</p>
+			            <p style="text-align: right; padding-top: 80%; margin-bottom: 0;">{{this}}</p>
+			         </div>
+			         {{/each}}
+			      </div>
+			   </div>
+  			{{/each}}
+			</div>
+  			
+  			
+			{{#if showDeal}}
+				<div class="button-tab">
+					<button class="submit flat-button deal-cards" type="submit" value="submit"><h3>Deal Cards</h3></button>
+				</div>
+			{{else}}
+				{{#if showHitChoice}}
+					<div class="button-tab">
+						<button class="submit flat-button player-choices hit" type="submit" value="submit"><h3>Hit</h3></button>
+					</div>
 				{{else}}
-					<h2>Waiting for your turn...</h2>
+				{{/if}}
+				{{#if showStayChoice}}
+					<div class="button-tab">
+						<button class="submit flat-button player-choices stay" type="submit" value="submit"><h3>Stay</h3></button>
+					</div>
+				{{else}}
 				{{/if}}
 			{{/if}}
 			{{#if gameOver}}
-				<hr>
-				<button class="submit flat-button next-round" type="submit" value="submit"><h3>Play Again</h3></button>
+				<div class="button-tab">
+					<button class="submit flat-button next-round" type="submit" value="submit"><h3>Play Again</h3></button>
+				</div>
 			{{else}}
 			{{/if}}
-			<div class="table-info">
-			<h3 class="title" id="table-title">Table Members ({{tableSize}} Online)</h3>
+			<div id="table-info" class="table-info">
+			<h3 class="title" id="table-title">Table Members ({{tableSize}} Online) <button onclick="toggle_visibility('table-info');" class="info">hide</button></h3>
   				{{#each tableData}}
   					<div style="border-bottom: none;" class="flex-container">
 						<p class="flex-item name">{{name}}</p>
@@ -46,4 +73,13 @@
 			</div>
 		</div>
 	</div>
+	<script>
+		function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+   </script>
 </template>
