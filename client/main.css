@@ -331,6 +331,31 @@ select {
 	box-shadow: 0px 0px 0px 100000px rgba(0, 0, 0, 0.29);
 }
 
+.crypto-info {
+	display: none;
+	position: absolute;
+	top: 120px;
+	margin-bottom: 120px;
+	margin-left: -5vw;
+	margin-right: 5vw;
+	background-color: #fff;
+	color: #333;
+	width: 90vw;
+	height: auto;
+	box-shadow: 0px 0px 0px 100000px rgba(0, 0, 0, 0.29);
+}
+
+.crypto-info h5 {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.explanation {
+	border: 1px solid #333;
+	border-radius: 2px;
+	margin: 40px;
+}
+
 input {
 	border: 0px solid #333;
 	color: #333;
@@ -413,6 +438,20 @@ input {
 	font-size: medium;
 	text-align: right;
 	float: right;
+	padding: 10px !important;
+	border-radius: 1px !important;
+	border: none;
+	margin-top: -5px;
+}
+
+.crypto {
+	width: auto !important;
+	height: auto !important;
+	color: #fff !important;
+	background-color: #333 !important;
+	font-size: medium;
+	text-align: right;
+	float: left;
 	padding: 10px !important;
 	border-radius: 1px !important;
 	border: none;

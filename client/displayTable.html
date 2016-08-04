@@ -2,7 +2,7 @@
 <template name="displayTable">
 	<div class="animated fadeIn content">
 		<div id="tableInfo">
-			<h3 class="title" id="manage-title">Welcome {{personName}} | Table Code: {{tableCode}} <button onclick="toggle_visibility('table-info');" class="info">info</button></h3>
+			<h3 class="title" id="manage-title"><button onclick="toggle_visibility('crypto-info');" class="crypto">crypto</button> Welcome {{personName}} | Table Code: {{tableCode}} <button onclick="toggle_visibility('table-info');" class="info">info</button></h3>
 			{{#if showWinner}}
 				<h2 class="title">{{winner}}</h2>
 			{{else}}
@@ -11,7 +11,7 @@
   			{{#each tableData}}
 			   <div class="flex-item hand">
 			      <h3>{{name}} ({{isDealer}})</h3><h4 style="float: right"> {{isTurn}}</h4>
-			      <h3> Score: {{handValue}} | Chips: {{chipCount}} | Bet: {{bet}}</h3>
+			      <h3> Score: {{handValue}}</h3>
 			      <hr>
 			      <div style="border: none;" class="flex-container cards-container hand">
 			         {{#each handArr}}
@@ -21,6 +21,7 @@
 			         </div>
 			         {{/each}}
 			      </div>
+			      <h3>Chips: {{chipCount}} | Bet: {{bet}}</h3>
 			   </div>
   			{{/each}}
 			</div>
@@ -72,6 +73,17 @@
 				{{verifyCards}}
 				{{nextRoundRefresh}}
 				{{getBet}}
+			</div>
+			
+			<div id="crypto-info" class="crypto-info">
+			<h4 class="title" id="table-title">Your Input: {{entropyInput}} <button onclick="toggle_visibility('crypto-info');" class="info">hide</button></h4>
+  				{{#each explainArr}}
+  				<div class="explanation" style="border: 1px solid black">
+  					{{#each this}}
+	  					<h5>{{this}}</h5>
+	  				{{/each}}
+  				</div>
+				{{/each}}
 			</div>
 		</div>
 	</div>

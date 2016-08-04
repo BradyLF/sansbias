@@ -116,7 +116,7 @@ Template.addTable.events({
 						cardKeyArr.push(moddedDecimalHash);
 						
 						//generate the nonce and push it into the array
-						var nonce = stringGen(32);
+						var nonce = CryptoJS.SHA256(inputValue + "nonce" + i.toString()).toString();
 						nonceArr.push(nonce);
 						
 						//generate the card's hash and push it to the hash array
@@ -126,10 +126,11 @@ Template.addTable.events({
 					//create tableID, personID, personKey, and deck Array
 					var tableID = stringGen(16);
 					var personID = stringGen(8);
-					var personKey = stringGen(4);
+					var personKey = CryptoJS.SHA256(inputValue).toString();
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
 					//locally store all arrays
+					localStorage.setItem("entropyInput-" + personID, inputValue);
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
@@ -277,7 +278,7 @@ Template.displayTable.helpers({
 						cardKeyArr.push(moddedDecimalHash);
 						
 						//generate the nonce and push it into the array
-						var nonce = stringGen(32);
+						var nonce = CryptoJS.SHA256(inputValue + "nonce" + i.toString()).toString();
 						nonceArr.push(nonce);
 						
 						//generate the card's hash and push it to the hash array
@@ -287,6 +288,7 @@ Template.displayTable.helpers({
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
 					//locally store items
+					localStorage.setItem("entropyInput-" + personID, inputValue);
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
@@ -424,6 +426,56 @@ Template.displayTable.helpers({
 		}		
 	},
 		
+	explainArr: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		inputValue = localStorage.getItem("entropyInput-"+personID);
+
+		var explainArr = [];
+		//push each card's info into the array
+		for (i = 52; i > 0; i--) {
+			var subArr = [];
+			//get the SHA hash from the input value plus i
+			var hash = CryptoJS.SHA256(inputValue + i.toString()).toString();
+			var decimalHash = parseInt(hash, 16);
+			
+			subArr.push("Your input + " + i + " hashed: ");
+			subArr.push(CryptoJS.SHA256(inputValue + i.toString().toString()));
+			subArr.push("-------");
+			//mod the hash and put it into the array
+			var moddedDecimalHash = decimalHash % i;
+			subArr.push("This hash parsed to decimal, then mod " + i + ": ");
+			subArr.push(moddedDecimalHash);
+			subArr.push("-------");
+						
+			//generate the nonce and push it into the array
+			var nonce = CryptoJS.SHA256(inputValue + "nonce" + i.toString()).toString();
+			
+			subArr.push("Your nonce: input + 'nonce' + "+ i + " hashed: ");
+			subArr.push(CryptoJS.SHA256(inputValue + "nonce" + i.toString()).toString());
+			subArr.push("-------");
+						
+			//generate the card's hash and push it to the hash array
+			
+			subArr.push("Your final hash: parsed hash + nonce: ");
+			subArr.push(CryptoJS.SHA256(moddedDecimalHash.toString() + nonce.toString()).toString());
+			explainArr.push(subArr);
+		}
+		return explainArr;	
+	},
+	
+	entropyInput: function () {
+		var params =  Router.current().params;	
+		var tableID = params.tableID.toString();
+		var personID = params.personID.toString();
+		
+		return localStorage.getItem("entropyInput-"+personID);
+		
+		
+	},
+	
 	//display all table data
 	tableData: function () {
 		var params =  Router.current().params;	
@@ -482,7 +534,7 @@ Template.displayTable.helpers({
 	
 				}
 			}
-			
+			peopleArr[i].handArrLength = peopleArr[i].handArr.length;
 		}
 		return peopleArr;
 	},
@@ -891,7 +943,8 @@ Template.joinTable.events({
 						cardKeyArr.push(moddedDecimalHash);
 						
 						//generate the nonce and push it into the array
-						var nonce = stringGen(32);
+						var nonce = CryptoJS.SHA256(inputValue + "nonce" + i.toString()).toString();
+
 						nonceArr.push(nonce);
 						
 						//generate the card's hash and push it to the hash array
@@ -900,10 +953,11 @@ Template.joinTable.events({
 					
 					//generate ID's
 					var personID = stringGen(8);
-					var personKey = stringGen(4);
+					var personKey = CryptoJS.SHA256(inputValue).toString();
 					var deckArr = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K","A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
 					
 					//locally store arrays
+					localStorage.setItem("entropyInput-" + personID, inputValue);
 					localStorage.setItem("cardKeyArr-" + personID, cardKeyArr);
 					localStorage.setItem("nonceArr-" + personID, nonceArr);
 					localStorage.setItem("hashArr-" + personID, hashArr);
